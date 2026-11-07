@@ -1,0 +1,14 @@
+services:
+  myvideo:
+    image: ghcr.io/jstplink/myvideo:latest
+    build: .
+    container_name: myvideo
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-8090}:8080"
+    env_file: .env
+    volumes:
+      - myvideo-data:/data
+
+volumes:
+  myvideo-data:

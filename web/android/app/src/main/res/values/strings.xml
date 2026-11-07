@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MyVideo</string>
+    <string name="title_activity_main">MyVideo</string>
+    <string name="package_name">it.fplinio.myvideo</string>
+    <string name="custom_url_scheme">it.fplinio.myvideo</string>
+</resources>
