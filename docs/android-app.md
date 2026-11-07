@@ -22,7 +22,7 @@ L'APK e' la stessa web UI impacchettata con **Capacitor** (`web/android/`, `appI
 | Pulsante "Prossimo" (solo se esiste un episodio successivo) | Chiude il lettore e la web UI apre subito l'episodio dopo (`result.next`) |
 | Pulsanti -10 / +30, barra di avanzamento, Audio, Sottotitoli | Come prima |
 
-Alla fine di un episodio si passa automaticamente al successivo. I gesti sono gestiti da uno strato trasparente (`GestureDetector`) sopra il video: tocco singolo confermato = pausa, doppio tocco = salto in base a metà schermo sinistra/destra. Il plugin riceve `hasNext` da `Watch.tsx` e restituisce `{ position, duration, next }`.
+Alla fine di un episodio si passa automaticamente al successivo. La fine viene rilevata in tre modi (`VlcPlayerActivity`): evento libVLC `EndReached`; evento `Stopped` entro 3 s dalla fine; controllo di sicurezza ogni secondo (`endWatch`) che chiude il lettore se lo stato è Ended/Stopped/Error vicino alla fine oppure se, negli ultimi 45 s di video, il tempo non avanza da 4 s (in pausa non scatta). Serve perché libVLC non sempre invia `EndReached` (durata dichiarata errata, flusso HTTP che si chiude) e il lettore restava fermo sull'ultimo fotogramma. I gesti sono gestiti da uno strato trasparente (`GestureDetector`) sopra il video: tocco singolo confermato = pausa, doppio tocco = salto in base a metà schermo sinistra/destra. Il plugin riceve `hasNext` da `Watch.tsx` e restituisce `{ position, duration, next }`.
 
 ## Tasto Indietro (navigazione a pila)
 

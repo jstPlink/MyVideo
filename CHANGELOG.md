@@ -3,6 +3,10 @@
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/), versioni semver.
 Ogni commit incrementa la versione e viene pubblicato su GitHub con il tag `vX.Y.Z`.
 
+## [0.4.1] - 2026-11-07
+### Corretto
+- Player Android: a fine episodio il lettore non resta più bloccato sull'ultimo fotogramma. libVLC non sempre segnala la fine del file; ora un controllo ogni secondo riconosce lo stato terminale (Ended/Stopped/Error vicino alla fine) o il tempo fermo da 4 s negli ultimi 45 s, chiude il lettore e la web UI apre l'episodio successivo.
+
 ## [0.4.0] - 2026-11-07
 ### Aggiunto
 - Player Android: tocco sullo schermo = pausa/riprendi; doppio tocco a sinistra = -10 s, a destra = +30 s; pulsante velocità (1x / 1.25x / 1.5x / 2x); pulsante "Prossimo" che passa all'episodio successivo.

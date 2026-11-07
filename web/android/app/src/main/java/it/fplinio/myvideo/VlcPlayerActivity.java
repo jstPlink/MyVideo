@@ -49,6 +49,8 @@ public class VlcPlayerActivity extends AppCompatActivity {
     private static final float[] RATES = {1f, 1.25f, 1.5f, 2f};
     private int rateIdx = 0;
     private GestureDetector gestures;
+    private long lastTickTime = -1;
+    private int stalledTicks = 0;
     private FrameLayout rootView;
     private final Runnable hideToast = () -> { if (toast != null) toast.setVisibility(View.GONE); };
 
@@ -59,6 +61,40 @@ public class VlcPlayerActivity extends AppCompatActivity {
     private String error = null;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable hide = this::hideControls;
+
+    /**
+     * libVLC non sempre invia EndReached (file con durata dichiarata errata, flussi HTTP che si chiudono):
+     * il player restava fermo sull'ultimo fotogramma. Ogni secondo controlliamo stato e tempo:
+     * se il lettore e' Ended/Stopped/Error vicino alla fine, o il tempo non avanza da 4 s negli ultimi 45 s
+     * di video, consideriamo l'episodio finito.
+     */
+    private final Runnable endWatch = new Runnable() {
+        @Override public void run() {
+            if (player == null || finishing) return;
+            try {
+                long len = Math.max(lengthMs, player.getLength());
+                long t = Math.max(timeMs, player.getTime());
+                int st = player.getPlayerState();
+                boolean nearEnd = len > 0 && t >= len - 45000;
+                boolean veryNear = len > 0 && t >= len - 3000;
+                boolean terminal = st == Media.State.Ended || st == Media.State.Stopped || st == Media.State.Error;
+                if (terminal && (veryNear || st == Media.State.Ended)) {
+                    ended = true;
+                    finishWithResult();
+                    return;
+                }
+                boolean paused = st == Media.State.Paused;
+                if (nearEnd && !paused && t == lastTickTime) stalledTicks++; else stalledTicks = 0;
+                lastTickTime = t;
+                if (stalledTicks >= 4) {
+                    ended = true;
+                    finishWithResult();
+                    return;
+                }
+            } catch (Throwable ignored) { /* il lettore sta per essere rilasciato */ }
+            handler.postDelayed(this, 1000);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -213,6 +249,12 @@ public class VlcPlayerActivity extends AppCompatActivity {
                     ended = true;
                     finishWithResult();
                     break;
+                case MediaPlayer.Event.Stopped:
+                    if (lengthMs > 0 && Math.max(timeMs, 0) >= lengthMs - 3000 && !finishing) {
+                        ended = true;
+                        finishWithResult();
+                    }
+                    break;
                 case MediaPlayer.Event.EncounteredError:
                     error = "Impossibile riprodurre questo file";
                     finishWithResult();
@@ -222,6 +264,7 @@ public class VlcPlayerActivity extends AppCompatActivity {
             }
         });
         player.play();
+        handler.postDelayed(endWatch, 2000);
         scheduleHide();
     }
 
@@ -366,6 +409,7 @@ public class VlcPlayerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         handler.removeCallbacks(hide);
+        handler.removeCallbacks(endWatch);
         final MediaPlayer p = player;
         final LibVLC l = libVLC;
         player = null;
