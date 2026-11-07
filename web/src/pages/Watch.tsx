@@ -5,7 +5,7 @@ import { VlcPlayer } from '../native';
 
 interface Play {
   fileId: number; titleId: number; ext: string; name: string; kind: string; title: string;
-  streamPath: string; position: number; nextFileId: number | null;
+  streamPath: string; position: number; nextFileId: number | null; prevFileId: number | null;
 }
 
 // Formati che nessun browser riproduce: si passa direttamente a VLC.
@@ -71,12 +71,13 @@ export default function Watch() {
   useEffect(() => {
     if (!play || !isNative) return;
     let cancelled = false;
-    VlcPlayer.play({ url: streamUrl, title: play.title, position: play.position, hasNext: !!play.nextFileId })
+    VlcPlayer.play({ url: streamUrl, title: play.title, position: play.position, hasNext: !!play.nextFileId, hasPrev: !!play.prevFileId })
       .then((r) => {
         if (cancelled) return;
         if (r.duration > 0) saveProgress(play.fileId, r.position, r.duration);
         const done = r.duration > 0 && (r.position / r.duration > 0.92 || r.duration - r.position < 90);
-        if ((done || r.next) && play.nextFileId) nav(`/watch/${play.nextFileId}`, { replace: true });
+        if (r.prev && play.prevFileId) nav(`/watch/${play.prevFileId}`, { replace: true });
+        else if ((done || r.next) && play.nextFileId) nav(`/watch/${play.nextFileId}`, { replace: true });
         else backRef.current();
       })
       .catch((e) => !cancelled && setError(e?.message || 'Impossibile avviare il lettore'));

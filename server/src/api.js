@@ -14,13 +14,16 @@ function card(t, extra = {}) {
   };
 }
 
-function nextFile(fileId) {
+function neighborFile(fileId, delta) {
   const f = db.prepare('SELECT * FROM files WHERE id = ?').get(fileId);
   if (!f) return null;
   const all = db.prepare('SELECT id, season, episode FROM files WHERE title_id = ? ORDER BY season, episode, name').all(f.title_id);
   const i = all.findIndex((x) => x.id === fileId);
-  return i >= 0 && i < all.length - 1 ? all[i + 1].id : null;
+  const j = i + delta;
+  return i >= 0 && j >= 0 && j < all.length ? all[j].id : null;
 }
+
+const nextFile = (fileId) => neighborFile(fileId, 1);
 
 function epLabel(f) {
   return f.season != null && f.episode != null ? `S${f.season}:E${f.episode}` : '';
@@ -186,6 +189,7 @@ apiRouter.get('/play/:fileId', requireAuth, (req, res) => {
     streamPath: `/api/stream/${fileId}?t=${token}`,
     position: p && !p.completed ? p.position : 0,
     nextFileId: nf,
+    prevFileId: neighborFile(fileId, -1),
   });
 });
 

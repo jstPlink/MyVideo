@@ -21,7 +21,7 @@ Base: `/api`. Formato JSON. Autenticazione: header `Authorization: Bearer <token
 | GET | `/titles/:id` | Dettaglio, file/episodi con avanzamento, `resume`, `seasons` (nomi delle saghe, se definiti), titoli correlati |
 | GET | `/mylist` | La mia lista |
 | POST | `/mylist/:titleId` | Aggiunge/rimuove -> `{ inList }` |
-| GET | `/play/:fileId` | `{ streamPath, title, position, nextFileId, ext, ... }` con token di streaming di 12 h |
+| GET | `/play/:fileId` | `{ streamPath, title, position, nextFileId, prevFileId, ext, ... }` con token di streaming di 12 h |
 | GET | `/stream/:fileId?t=<token>` | Video con supporto `Range` (anche con Bearer) |
 | POST | `/progress` | `{ fileId, position, duration }` (secondi); completato oltre il 92% |
 | DELETE | `/progress/title/:titleId` | Azzera l'avanzamento di un titolo |

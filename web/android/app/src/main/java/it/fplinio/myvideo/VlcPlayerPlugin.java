@@ -31,6 +31,7 @@ public class VlcPlayerPlugin extends Plugin {
         intent.putExtra("title", call.getString("title", ""));
         intent.putExtra("position", call.getDouble("position", 0.0));
         intent.putExtra("hasNext", Boolean.TRUE.equals(call.getBoolean("hasNext", false)));
+        intent.putExtra("hasPrev", Boolean.TRUE.equals(call.getBoolean("hasPrev", false)));
         startActivityForResult(call, intent, "playResult");
     }
 
@@ -46,6 +47,7 @@ public class VlcPlayerPlugin extends Plugin {
         ret.put("position", data != null ? data.getDoubleExtra("position", 0) : 0);
         ret.put("duration", data != null ? data.getDoubleExtra("duration", 0) : 0);
         ret.put("next", data != null && data.getBooleanExtra("next", false));
+        ret.put("prev", data != null && data.getBooleanExtra("prev", false));
         call.resolve(ret);
     }
 }

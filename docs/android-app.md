@@ -13,14 +13,21 @@ L'APK e' la stessa web UI impacchettata con **Capacitor** (`web/android/`, `appI
 
 ## Controlli del player (`VlcPlayerActivity`)
 
-| Azione | Effetto |
+L'interfaccia è costruita in codice (nessun layout XML) ispirandosi a VLC per Android; le icone sono vettori in `res/drawable/ic_pl_*.xml`; colore d'accento arancione VLC (`#FF8800`).
+
+**Barra superiore**: indietro, titolo, traccia audio, sottotitoli, velocità (testo `1x`: apre l'elenco 0.5x, 0.75x, 1x, 1.25x, 1.5x, 2x).
+**Barra inferiore**: tempo trascorso, seekbar, durata (un tocco alterna durata e tempo rimanente); sotto, da sinistra: **lucchetto** (blocca tutti i comandi e i gesti: resta solo il pulsante di sblocco), precedente, -10 s, play/pausa, +30 s, successivo, **formato schermo** (cicla Adatta, Schermo intero, Riempi, 16:9, 4:3, Originale).
+I comandi si nascondono dopo 4 s in riproduzione e restano visibili in pausa. Precedente/successivo sono attenuati se non esiste l'episodio.
+
+| Gesto | Effetto |
 |---|---|
-| Tocco sullo schermo | Pausa / riprendi (i comandi restano visibili in pausa, si nascondono dopo 4 s in riproduzione) |
-| Doppio tocco a sinistra | Indietro di 10 secondi (messaggio "-10 s") |
-| Doppio tocco a destra | Avanti di 30 secondi (messaggio "+30 s") |
-| Pulsante velocità | Cicla 1x -> 1.25x -> 1.5x -> 2x -> 1x |
-| Pulsante "Prossimo" (solo se esiste un episodio successivo) | Chiude il lettore e la web UI apre subito l'episodio dopo (`result.next`) |
-| Pulsanti -10 / +30, barra di avanzamento, Audio, Sottotitoli | Come prima |
+| Tocco | Pausa / riprendi |
+| Doppio tocco a sinistra / destra | -10 s / +30 s (messaggio al centro) |
+| Scorrimento verticale a sinistra | Luminosità dello schermo (indicatore con percentuale; ripristinata all'uscita) |
+| Scorrimento verticale a destra | Volume di sistema (indicatore con percentuale) |
+| Scorrimento orizzontale | Cerca nel video (tutta la larghezza = 90 s), con tempo di destinazione; si applica al rilascio |
+
+Il plugin riceve `hasNext` e `hasPrev` da `Watch.tsx` e restituisce `{ position, duration, next, prev }`: con *Successivo* / *Precedente* il lettore si chiude e la web UI apre l'altro episodio (`/api/play/:id` restituisce `nextFileId` e `prevFileId`). I gesti sono gestiti da uno strato trasparente (`GestureDetector`) sopra il video.
 
 Alla fine di un episodio si passa automaticamente al successivo. La fine viene rilevata in tre modi (`VlcPlayerActivity`): evento libVLC `EndReached`; evento `Stopped` entro 3 s dalla fine; controllo di sicurezza ogni secondo (`endWatch`) che chiude il lettore se lo stato è Ended/Stopped/Error vicino alla fine oppure se, negli ultimi 45 s di video, il tempo non avanza da 4 s (in pausa non scatta). Serve perché libVLC non sempre invia `EndReached` (durata dichiarata errata, flusso HTTP che si chiude) e il lettore restava fermo sull'ultimo fotogramma. I gesti sono gestiti da uno strato trasparente (`GestureDetector`) sopra il video: tocco singolo confermato = pausa, doppio tocco = salto in base a metà schermo sinistra/destra. Il plugin riceve `hasNext` da `Watch.tsx` e restituisce `{ position, duration, next }`.
 
