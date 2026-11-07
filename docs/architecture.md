@@ -42,7 +42,7 @@ I titoli sono identificati da una chiave stabile (`M:<file>` o `S:<cartella>`): 
 
 ## Autenticazione e sicurezza
 
-- Password con bcrypt (costo 11); minimo 8 caratteri.
+- Password con bcrypt (costo 11); minimo 5 caratteri.
 - Token JWT di accesso (30 giorni) inviato come `Authorization: Bearer`, salvato in `localStorage`. Non si usano cookie, cosi' web e APK funzionano allo stesso modo.
 - Cambio password o disabilitazione utente incrementano `token_version`: i vecchi token smettono di valere.
 - Primo utente registrato = amministratore. Dopo: `REGISTRATION=approval` (default, l'admin approva), `open` o `closed`.

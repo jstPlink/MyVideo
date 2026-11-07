@@ -79,9 +79,9 @@ export default function Login() {
         {info && <div className="notice ok">{info}</div>}
         {error && <div className="notice err">{error}</div>}
         <input type="email" placeholder="Email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input type="password" placeholder="Password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} value={password} onChange={(e) => setPassword(e.target.value)} minLength={mode === 'register' ? 8 : undefined} required />
+        <input type="password" placeholder="Password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} value={password} onChange={(e) => setPassword(e.target.value)} minLength={mode === 'register' ? 5 : undefined} required />
         {mode === 'register' && (
-          <input type="password" placeholder="Ripeti la password (min. 8 caratteri)" autoComplete="new-password" value={password2} onChange={(e) => setPassword2(e.target.value)} minLength={8} required />
+          <input type="password" placeholder="Ripeti la password (min. 5 caratteri)" autoComplete="new-password" value={password2} onChange={(e) => setPassword2(e.target.value)} minLength={5} required />
         )}
         <button className="btn primary full" disabled={busy} type="submit">
           {busy ? '…' : setup ? 'Crea amministratore' : mode === 'login' ? 'Accedi' : 'Registrati'}

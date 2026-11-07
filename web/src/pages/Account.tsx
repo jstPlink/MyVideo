@@ -32,8 +32,8 @@ export default function Account() {
         <h2>Cambia password</h2>
         {msg && <div className={'notice ' + (msg.ok ? 'ok' : 'err')}>{msg.text}</div>}
         <input type="password" placeholder="Password attuale" autoComplete="current-password" value={cur} onChange={(e) => setCur(e.target.value)} required />
-        <input type="password" placeholder="Nuova password (min. 8 caratteri)" autoComplete="new-password" minLength={8} value={n1} onChange={(e) => setN1(e.target.value)} required />
-        <input type="password" placeholder="Ripeti la nuova password" autoComplete="new-password" minLength={8} value={n2} onChange={(e) => setN2(e.target.value)} required />
+        <input type="password" placeholder="Nuova password (min. 5 caratteri)" autoComplete="new-password" minLength={5} value={n1} onChange={(e) => setN1(e.target.value)} required />
+        <input type="password" placeholder="Ripeti la nuova password" autoComplete="new-password" minLength={5} value={n2} onChange={(e) => setN2(e.target.value)} required />
         <button className="btn primary" type="submit">Aggiorna password</button>
       </form>
 

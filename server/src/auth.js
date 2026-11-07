@@ -81,7 +81,7 @@ authRouter.post('/register', (req, res) => {
   const email = String(req.body?.email || '').trim().toLowerCase();
   const password = String(req.body?.password || '');
   if (!EMAIL_RE.test(email)) return res.status(400).json({ error: 'Email non valida' });
-  if (password.length < 8) return res.status(400).json({ error: 'La password deve avere almeno 8 caratteri' });
+  if (password.length < 5) return res.status(400).json({ error: 'La password deve avere almeno 5 caratteri' });
 
   const first = userCount() === 0;
   if (!first && config.registration === 'closed') return res.status(403).json({ error: 'Le registrazioni sono chiuse' });
@@ -118,7 +118,7 @@ authRouter.post('/password', requireAuth, (req, res) => {
   const current = String(req.body?.currentPassword || '');
   const next = String(req.body?.newPassword || '');
   if (!bcrypt.compareSync(current, req.user.password_hash)) return res.status(400).json({ error: 'Password attuale errata' });
-  if (next.length < 8) return res.status(400).json({ error: 'La nuova password deve avere almeno 8 caratteri' });
+  if (next.length < 5) return res.status(400).json({ error: 'La nuova password deve avere almeno 5 caratteri' });
   db.prepare('UPDATE users SET password_hash = ?, token_version = token_version + 1 WHERE id = ?').run(bcrypt.hashSync(next, 11), req.user.id);
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
   // il vecchio token non e' piu' valido: ne restituiamo uno nuovo

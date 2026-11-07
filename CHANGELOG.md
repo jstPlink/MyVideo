@@ -3,6 +3,10 @@
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/), versioni semver.
 Ogni commit incrementa la versione e viene pubblicato su GitHub con il tag `vX.Y.Z`.
 
+## [0.1.3] - 2026-11-07
+### Modificato
+- La lunghezza minima della password scende da 8 a 5 caratteri (registrazione, primo avvio e cambio password).
+
 ## [0.1.2] - 2026-11-07
 ### Corretto
 - Workflow Release: YAML non valido nel passo SDK Android (nome con `:` non tra virgolette) introdotto in 0.1.1; il tag v0.1.1 non ha prodotto alcuna release.
