@@ -3,6 +3,16 @@
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/), versioni semver.
 Ogni commit incrementa la versione e viene pubblicato su GitHub con il tag `vX.Y.Z`.
 
+## [0.4.0] - 2026-11-07
+### Aggiunto
+- Player Android: tocco sullo schermo = pausa/riprendi; doppio tocco a sinistra = -10 s, a destra = +30 s; pulsante velocità (1x / 1.25x / 1.5x / 2x); pulsante "Prossimo" che passa all'episodio successivo.
+- Cartelle unite in una serie unica con una stagione per sottocartella (Amministrazione -> Serie unica con stagioni). *A tutto reality* è già unita, con le stagioni in ordine cronologico (L'isola, Azione, Il tour, La vendetta dell'isola, All stars, Missione cosmo ridicola).
+- Correzione manuale dell'abbinamento TMDB (Amministrazione -> Locandine e metadati): cerca su TMDB e scegli la scheda giusta; la scelta resta fissa nelle riscansioni.
+### Corretto
+- Locandine: *Dragon Ball* non viene più abbinato a *Dragon Ball Z* (i titoli identici hanno la precedenza), il refuso "Dragn Ball Kai" viene corretto e Kai cerca "Dragon Ball Z Kai". Dopo l'aggiornamento i titoli non bloccati a mano vengono ricercati di nuovo.
+- Il selettore di stagione/saga è allineato a sinistra sotto "Episodi".
+- Le stagioni sono sempre chiamate "stagioni" nel riepilogo del titolo.
+
 ## [0.3.0] - 2026-11-07
 ### Aggiunto
 - Saghe/stagioni personalizzate per le serie con numerazione continua: regole "dall'episodio N inizia la saga X", editor in Amministrazione e regole predefinite per Dragon Ball (serie originale), Kai, Super e GT. Il dettaglio mostra le saghe nel selettore.

@@ -52,7 +52,7 @@ export default function TitlePage() {
           <div className="meta">
             {t.rating ? <span className="match">★ {t.rating.toFixed(1)}</span> : null}
             {t.year && <span>{t.year}</span>}
-            {t.kind === 'series' && <span>{seasons.length} {t.seasons.length ? (seasons.length === 1 ? 'saga' : 'saghe') : seasons.length === 1 ? 'stagione' : 'stagioni'}</span>}
+            {t.kind === 'series' && <span>{seasons.length} {seasons.length === 1 ? 'stagione' : 'stagioni'}</span>}
             {t.runtime ? <span>{t.runtime} min</span> : null}
             {t.genres && <span>{t.genres}</span>}
           </div>
@@ -71,9 +71,9 @@ export default function TitlePage() {
       {t.kind === 'series' && (
         <section className="episodes">
           <div className="ep-head">
-            <h2>{t.seasons.length ? seasonName(season ?? 1) : 'Episodi'}</h2>
+            <h2>Episodi</h2>
             {seasons.length > 1 && (
-              <select value={season ?? 1} onChange={(e) => setSeason(Number(e.target.value))}>
+              <select value={season ?? 1} onChange={(e) => setSeason(Number(e.target.value))} aria-label="Stagione">
                 {seasons.map((s) => <option key={s} value={s}>{seasonName(s)}</option>)}
               </select>
             )}

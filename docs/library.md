@@ -34,6 +34,15 @@ Le serie con numerazione continua (Dragon Ball: episodi 1-153, Kai 1-159...) non
 - **Predefinite**: alla prima scansione le serie riconosciute dal nome ricevono le regole (da Wikipedia, in italiano): *Dragon Ball* (9 saghe, ep. 1-153), *Dragon Ball Kai* (7, ep. 1-159), *Dragon Ball Super* (5, ep. 1-131), *Dragon Ball GT* (4, ep. 1-64). *Daima* e *Heroes* restano a stagione unica.
 - **Modifica**: Amministrazione -> *Saghe / stagioni delle serie*: scegli la serie e scrivi una riga per saga (`19 Saga di Freezer`). Campo vuoto = una sola stagione. *Ripristina predefinite* torna ai valori sopra. Le regole modificate sopravvivono alle riscansioni.
 
+## Unire cartelle in una serie con stagioni
+
+Una cartella che contiene più serie o stagioni separate (es. `A tutto reality/` con una sottocartella per stagione) può diventare **una sola serie**: ogni sottocartella con video è una stagione, il nome della stagione è il nome della sottocartella senza il nome della serie ("A tutto reality - Azione" -> "Azione"). Le sottocartelle sono ordinate secondo l'elenco impostato, poi in ordine alfabetico.
+
+- Si configura da Amministrazione -> *Serie unica con stagioni* (elenco delle cartelle con almeno due serie al loro interno): *Unisci in una serie*, ordine delle stagioni (una riga ciascuna), *Separa di nuovo*. Salvando parte una riscansione.
+- Salvataggio: tabella `overrides` con modo `seasons` (unita) o `noseasons` (esplicitamente separata) e l'ordine in `data`; i nomi delle stagioni sono in `seasons`.
+- **Predefinito**: `A tutto reality` è unita con l'ordine L'isola, Azione, Il tour, La vendetta dell'isola, All stars, Missione cosmo ridicola (ordine cronologico di Total Drama). Se la separi, il preset non torna.
+- La numerazione stagione scritta nei file (es. `5x01`) viene ignorata per queste serie: conta la posizione della sottocartella. L'avanzamento già salvato dagli episodi segue i file nella nuova serie; le voci "La mia lista" delle vecchie serie separate vanno riaggiunte.
+
 ## Righe della home
 
 *Continua a guardare*, *La mia lista*, *Aggiunti di recente*, *Serie TV*, poi una riga per ogni cartella di primo livello con almeno 3 titoli; il resto confluisce in *Altri titoli*.
@@ -41,6 +50,8 @@ Le serie con numerazione continua (Dragon Ball: episodi 1-153, Kai 1-159...) non
 ## Metadati TMDB (`tmdb.js`)
 
 - Serve una chiave: `TMDB_API_KEY` oppure Admin -> TMDB (API key v3 o Read Access Token v4). Senza chiave l'app funziona con segnaposto testuali al posto delle locandine.
+- **Abbinamento**: tra i risultati vince quello con titolo identico (normalizzato, senza accenti/punteggiatura), altrimenti il più simile (>= 60% delle parole in comune rispetto alla più lunga: "Dragon Ball" non diventa "Dragon Ball Z"). Alla ricerca si applicano correzioni note: il refuso `Dragn` -> `Dragon` e l'alias `Dragon Ball Kai` -> `Dragon Ball Z Kai` (`searchQuery` in `tmdb.js`).
+- **Correzione manuale**: Amministrazione -> *Locandine e metadati*: cerca il titolo in libreria, poi su TMDB, e scegli la scheda giusta (si salva l'ID, `meta_locked = 1`). *Torna all'automatico* toglie il blocco e rifà la ricerca. I titoli bloccati non vengono toccati dalle riscansioni né dai cambi di algoritmo (`meta_algo` nei `settings`: quando cambia, i titoli non bloccati tornano `pending`).
 - Ricerca in italiano (`it-IT`) per titolo (+ anno per i film). Un risultato e' accettato solo se il titolo e' abbastanza simile (>= 60% delle parole), per evitare abbinamenti sbagliati; altrimenti il titolo resta `none` e si puo' riprovare dall'Admin.
 - Si salvano trama, locandina, sfondo, voto, generi, durata. Per le serie con numerazione esplicita (`1x01`) si recuperano anche titolo, trama e immagine degli episodi.
 - Immagini caricate direttamente da `image.tmdb.org` dal client.

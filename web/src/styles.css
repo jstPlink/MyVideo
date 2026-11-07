@@ -105,7 +105,8 @@ button { cursor: pointer; }
 /* Dettaglio titolo */
 .title-page { padding-bottom: 60px; }
 .episodes { padding: 10px var(--pad) 20px; max-width: 1100px; }
-.ep-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.ep-head { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.ep-head select { max-width: 100%; text-align: left; }
 .ep-head h2 { font-size: 1.5rem; }
 select { background: #2a2a2a; border: 1px solid #555; border-radius: 4px; padding: 8px 10px; }
 .episodes ol { list-style: none; margin: 0; padding: 0; }
@@ -161,6 +162,14 @@ td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
 textarea { width: 100%; padding: 12px; border-radius: 4px; border: 1px solid #555; background: #333; outline: 0; font: inherit; resize: vertical; }
 textarea:focus { border-color: #fff; }
+
+/* Correzione metadati (Admin) */
+.tmdb-results { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+.tmdb-result { background: #2a2a2a; border: 1px solid #3a3a3a; border-radius: 4px; padding: 6px; text-align: left; display: flex; flex-direction: column; gap: 4px; }
+.tmdb-result img { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 3px; background: #111; }
+.tmdb-result b { font-size: .8rem; }
+.tmdb-result span { font-size: .72rem; color: var(--muted); }
+.tmdb-result:hover { border-color: #fff; }
 
 /* Indirizzo server con scelta http/https */
 .server-input { display: flex; flex-direction: column; gap: 10px; width: 100%; }

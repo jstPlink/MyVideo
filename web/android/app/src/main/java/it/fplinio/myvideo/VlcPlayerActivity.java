@@ -7,7 +7,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.GestureDetector;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -40,6 +42,15 @@ public class VlcPlayerActivity extends AppCompatActivity {
     private SeekBar seek;
     private TextView timeText;
     private TextView playBtn;
+    private TextView speedBtn;
+    private TextView toast;
+    private boolean hasNext = false;
+    private boolean nextRequested = false;
+    private static final float[] RATES = {1f, 1.25f, 1.5f, 2f};
+    private int rateIdx = 0;
+    private GestureDetector gestures;
+    private FrameLayout rootView;
+    private final Runnable hideToast = () -> { if (toast != null) toast.setVisibility(View.GONE); };
 
     private long lengthMs = 0;
     private long timeMs = 0;
@@ -58,14 +69,41 @@ public class VlcPlayerActivity extends AppCompatActivity {
         String url = getIntent().getStringExtra("url");
         String title = getIntent().getStringExtra("title");
         double startSec = getIntent().getDoubleExtra("position", 0);
+        hasNext = getIntent().getBooleanExtra("hasNext", false);
 
         FrameLayout root = new FrameLayout(this);
+        rootView = root;
         root.setBackgroundColor(Color.BLACK);
         setContentView(root);
 
         videoLayout = new VLCVideoLayout(this);
         root.addView(videoLayout, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        videoLayout.setOnClickListener(v -> toggleControls());
+
+        // Strato trasparente per i gesti: tocco = pausa/riprendi, doppio tocco a sinistra/destra = -10 s / +30 s
+        View touchLayer = new View(this);
+        root.addView(touchLayer, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        gestures = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            @Override public boolean onDown(MotionEvent e) { return true; }
+            @Override public boolean onSingleTapConfirmed(MotionEvent e) {
+                togglePlay();
+                showControls();
+                return true;
+            }
+            @Override public boolean onDoubleTap(MotionEvent e) {
+                boolean right = e.getX() > rootView.getWidth() / 2f;
+                seekBy(right ? 30000 : -10000);
+                flash(right ? "+30 s  ⏩" : "⏪  -10 s");
+                return true;
+            }
+        });
+        touchLayer.setOnTouchListener((v, ev) -> gestures.onTouchEvent(ev));
+
+        // Messaggio temporaneo al centro (salto, velocita')
+        toast = text("", 22);
+        toast.setBackgroundColor(0x99000000);
+        toast.setPadding(dp(18), dp(10), dp(18), dp(10));
+        toast.setVisibility(View.GONE);
+        root.addView(toast, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
 
         // Barra superiore: indietro + titolo
         LinearLayout top = new LinearLayout(this);
@@ -106,8 +144,12 @@ public class VlcPlayerActivity extends AppCompatActivity {
         TextView fwd = text("30 ⏩", 18);
         TextView audio = text("Audio", 14);
         TextView subs = text("Sottotitoli", 14);
-        for (TextView t : new TextView[]{audio, rew, playBtn, fwd, subs}) {
-            t.setPadding(dp(22), dp(6), dp(22), dp(6));
+        speedBtn = text("1x", 16);
+        TextView next = text("⏭ Prossimo", 14);
+        java.util.List<TextView> buttons = new ArrayList<>(java.util.Arrays.asList(audio, subs, rew, playBtn, fwd, speedBtn));
+        if (hasNext) buttons.add(next);
+        for (TextView t : buttons) {
+            t.setPadding(dp(18), dp(6), dp(18), dp(6));
             btnRow.addView(t);
         }
         bottom.addView(btnRow);
@@ -117,6 +159,8 @@ public class VlcPlayerActivity extends AppCompatActivity {
         playBtn.setOnClickListener(v -> togglePlay());
         rew.setOnClickListener(v -> seekBy(-10000));
         fwd.setOnClickListener(v -> seekBy(30000));
+        speedBtn.setOnClickListener(v -> cycleRate());
+        next.setOnClickListener(v -> { nextRequested = true; finishWithResult(); });
         audio.setOnClickListener(v -> pickTrack(true));
         subs.setOnClickListener(v -> pickTrack(false));
         seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -206,8 +250,31 @@ public class VlcPlayerActivity extends AppCompatActivity {
 
     private void togglePlay() {
         if (player == null) return;
-        if (player.isPlaying()) player.pause(); else player.play();
+        if (player.isPlaying()) {
+            player.pause();
+            handler.removeCallbacks(hide); // in pausa i comandi restano visibili
+        } else {
+            player.play();
+            scheduleHide();
+        }
+    }
+
+    private void cycleRate() {
+        if (player == null) return;
+        rateIdx = (rateIdx + 1) % RATES.length;
+        float r = RATES[rateIdx];
+        player.setRate(r);
+        String label = (r == (int) r ? String.valueOf((int) r) : String.valueOf(r)) + "x";
+        speedBtn.setText(label);
+        flash("Velocità " + label);
         scheduleHide();
+    }
+
+    private void flash(String msg) {
+        toast.setText(msg);
+        toast.setVisibility(View.VISIBLE);
+        handler.removeCallbacks(hideToast);
+        handler.postDelayed(hideToast, 800);
     }
 
     private void seekBy(long deltaMs) {
@@ -250,6 +317,7 @@ public class VlcPlayerActivity extends AppCompatActivity {
     }
 
     private void hideControls() {
+        if (player != null && !player.isPlaying()) return;
         controls.setVisibility(View.GONE);
         topBar.setVisibility(View.GONE);
         goImmersive();
@@ -278,6 +346,7 @@ public class VlcPlayerActivity extends AppCompatActivity {
             long pos = ended ? lengthMs : (player != null ? Math.max(timeMs, player.getTime()) : timeMs);
             data.putExtra("position", pos / 1000.0);
             data.putExtra("duration", lengthMs / 1000.0);
+            data.putExtra("next", nextRequested);
         }
         setResult(RESULT_OK, data);
         finish();

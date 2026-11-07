@@ -28,3 +28,22 @@ test('preset per nome serie', () => {
   assert.equal(presetFor('How i met your mother'), null);
   for (const p of PRESETS) assert.equal(p.rules[0].from, 1);
 });
+
+import { similarity, pick, searchQuery } from '../src/tmdb.js';
+
+test('TMDB: Dragon Ball non deve diventare Dragon Ball Z', () => {
+  const results = [
+    { id: 1, name: 'Dragon Ball Z', original_name: 'ドラゴンボールZ', first_air_date: '1989-04-26' },
+    { id: 2, name: 'Dragon Ball', original_name: 'ドラゴンボール', first_air_date: '1986-02-26' },
+    { id: 3, name: 'Dragon Ball Super', original_name: 'x', first_air_date: '2015-07-05' },
+  ];
+  assert.equal(pick(results, 'Dragon Ball', null, 'name', 'first_air_date').id, 2);
+  assert.equal(pick([results[0]], 'Dragon Ball', null, 'name', 'first_air_date').id, 1); // unico candidato plausibile
+  assert.ok(similarity('Dragon Ball', 'Dragon Ball Z') < 1);
+});
+
+test('TMDB: refusi e alias', () => {
+  assert.equal(searchQuery('Dragn Ball Kai'), 'Dragon Ball Z Kai');
+  assert.equal(searchQuery('Dragn Ball Super'), 'Dragon Ball Super');
+  assert.equal(searchQuery('Shrek'), 'Shrek');
+});

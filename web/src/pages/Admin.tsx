@@ -62,6 +62,121 @@ function SagaEditor() {
   );
 }
 
+interface Group { path: string; name: string; merged: boolean; order: string[] }
+
+const NL = String.fromCharCode(10);
+
+function GroupEditor() {
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [msg, setMsg] = useState('');
+  const load = useCallback(() => { api<{ groups: Group[] }>('/admin/groups').then((r) => setGroups(r.groups)); }, []);
+  useEffect(load, [load]);
+
+  const save = async (g: Group, merge: boolean, text: string) => {
+    const order = text.split(NL).map((x) => x.trim()).filter(Boolean);
+    await api('/admin/groups', { method: 'PUT', body: { path: g.path, merge, order } });
+    setMsg('Salvato: riscansione in corso, fra qualche secondo vedrai il risultato.');
+    setTimeout(load, 2500);
+  };
+
+  if (!groups.length) return <p className="muted">Nessuna cartella con più serie al suo interno.</p>;
+  return (
+    <>
+      {msg && <div className="notice ok" onClick={() => setMsg('')}>{msg}</div>}
+      {groups.map((g) => <GroupRow key={g.path + g.merged} g={g} onSave={save} />)}
+    </>
+  );
+}
+
+function GroupRow({ g, onSave }: { g: Group; onSave: (g: Group, merge: boolean, text: string) => void }) {
+  const [text, setText] = useState(g.order.join(NL));
+  return (
+    <div className="panel" style={{ background: '#262626' }}>
+      <h2>{g.name} <span className={'badge ' + (g.merged ? 'active' : '')}>{g.merged ? 'serie unica' : 'serie separate'}</span></h2>
+      <p className="muted small">Ogni sottocartella diventa una stagione. Scrivi i nomi nell'ordine in cui vuoi le stagioni (una riga ciascuna).</p>
+      <textarea rows={Math.min(8, Math.max(3, g.order.length + 1))} value={text} onChange={(e) => setText(e.target.value)} spellCheck={false} />
+      <div className="row-actions">
+        <button className="btn primary" onClick={() => onSave(g, true, text)}>{g.merged ? 'Salva ordine' : 'Unisci in una serie'}</button>
+        {g.merged && <button className="btn" onClick={() => onSave(g, false, text)}>Separa di nuovo</button>}
+      </div>
+    </div>
+  );
+}
+
+interface Hit { id: number; title: string; original: string; year: number | null; poster: string | null }
+interface Found { id: number; kind: 'movie' | 'series'; name: string; year: number | null; poster: string | null }
+
+function MetaFixer() {
+  const [q, setQ] = useState('');
+  const [found, setFound] = useState<Found[]>([]);
+  const [sel, setSel] = useState<Found | null>(null);
+  const [query, setQuery] = useState('');
+  const [hits, setHits] = useState<Hit[] | null>(null);
+  const [msg, setMsg] = useState('');
+
+  const search = async () => {
+    const r = await api<{ items: Found[] }>(`/titles?q=${encodeURIComponent(q)}`);
+    setFound(r.items.slice(0, 30));
+  };
+  const choose = (t: Found) => { setSel(t); setQuery(t.name); setHits(null); setMsg(''); };
+  const tmdbSearch = async () => {
+    if (!sel) return;
+    try {
+      const r = await api<{ results: Hit[] }>(`/admin/tmdb/search?kind=${sel.kind}&q=${encodeURIComponent(query)}`);
+      setHits(r.results);
+    } catch (e: any) { setMsg(e.message); }
+  };
+  const use = async (h: Hit) => {
+    if (!sel) return;
+    try {
+      await api(`/admin/titles/${sel.id}/tmdb`, { method: 'PUT', body: { tmdbId: h.id } });
+      setMsg(`"${sel.name}" ora usa "${h.title}" (TMDB ${h.id}).`);
+      setHits(null);
+    } catch (e: any) { setMsg(e.message); }
+  };
+  const auto = async () => {
+    if (!sel) return;
+    await api(`/admin/titles/${sel.id}/tmdb`, { method: 'DELETE' });
+    setMsg('Blocco rimosso: riprovo la ricerca automatica.');
+  };
+
+  return (
+    <>
+      <div className="row-actions">
+        <input placeholder="Titolo in libreria (es. Dragon Ball)" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && search()} />
+        <button className="btn" onClick={search}>Cerca</button>
+      </div>
+      {found.length > 0 && !sel && (
+        <div className="row-actions">
+          {found.map((t) => <button key={t.id} className="btn mini" onClick={() => choose(t)}>{t.name}{t.kind === 'series' ? ' (serie)' : ''}</button>)}
+        </div>
+      )}
+      {sel && (
+        <>
+          <p className="muted">Titolo scelto: <b>{sel.name}</b> · <a href="#" onClick={(e) => { e.preventDefault(); setSel(null); setHits(null); }}>cambia</a></p>
+          <div className="row-actions">
+            <input placeholder="Cerca su TMDB" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && tmdbSearch()} />
+            <button className="btn primary" onClick={tmdbSearch}>Cerca su TMDB</button>
+            <button className="btn" onClick={auto}>Torna all'automatico</button>
+          </div>
+          {hits && (hits.length ? (
+            <div className="tmdb-results">
+              {hits.map((h) => (
+                <button key={h.id} className="tmdb-result" onClick={() => use(h)}>
+                  {h.poster ? <img src={`https://image.tmdb.org/t/p/w185${h.poster}`} alt="" /> : <img alt="" />}
+                  <b>{h.title}</b>
+                  <span>{h.year || '—'} · TMDB {h.id}</span>
+                </button>
+              ))}
+            </div>
+          ) : <p className="muted">Nessun risultato.</p>)}
+        </>
+      )}
+      {msg && <div className="notice ok" onClick={() => setMsg('')}>{msg}</div>}
+    </>
+  );
+}
+
 const statusLabel: Record<string, string> = { active: 'Attivo', pending: 'In attesa', disabled: 'Disabilitato' };
 
 export default function Admin() {
@@ -166,6 +281,18 @@ export default function Admin() {
         <h2>Saghe / stagioni delle serie</h2>
         <p className="muted">Per le serie con numerazione continua (es. Dragon Ball, episodi 1-159) puoi dividere gli episodi in saghe o stagioni. Per Dragon Ball, Kai, Super e GT sono gia' impostate.</p>
         <SagaEditor />
+      </section>
+
+      <section className="panel">
+        <h2>Serie unica con stagioni</h2>
+        <p className="muted">Per cartelle che contengono più serie o stagioni separate (es. <i>A tutto reality</i>): le unisce in una sola serie, con ogni sottocartella come stagione.</p>
+        <GroupEditor />
+      </section>
+
+      <section className="panel">
+        <h2>Locandine e metadati: correggi l'abbinamento</h2>
+        <p className="muted">Se un titolo ha la locandina sbagliata o manca, cercalo qui e scegli la scheda giusta su TMDB. La scelta resta fissa anche dopo le riscansioni.</p>
+        <MetaFixer />
       </section>
 
       <section className="panel">

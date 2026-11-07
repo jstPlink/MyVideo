@@ -41,4 +41,9 @@ Base: `/api`. Formato JSON. Autenticazione: header `Authorization: Bearer <token
 | GET | `/admin/sagas` | Serie con le regole di saga (`text`, `source`, `presetAvailable`) |
 | PUT | `/admin/sagas/:titleId` | `{ text }` righe `<episodio> <nome>`; vuoto = stagione unica |
 | DELETE | `/admin/sagas/:titleId` | Ripristina le regole predefinite (o nessuna) |
+| GET | `/admin/groups` | Cartelle unibili in una serie unica (`merged`, `order`) |
+| PUT | `/admin/groups` | `{ path, merge, order[] }`: unisce (`seasons`) o separa (`noseasons`) e riscansiona |
+| GET | `/admin/tmdb/search?kind=movie\|series&q=` | Ricerca su TMDB per la correzione manuale |
+| PUT | `/admin/titles/:id/tmdb` | `{ tmdbId }`: imposta (e blocca) l'abbinamento TMDB |
+| DELETE | `/admin/titles/:id/tmdb` | Toglie il blocco e rifà la ricerca automatica |
 | PUT | `/admin/overrides` | `{ path, mode: series\|movies\|ignore\|null }` e riscansione |

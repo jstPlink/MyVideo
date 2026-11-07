@@ -5,7 +5,8 @@ import { db, getSetting, setSetting } from './db.js';
 import { requireAuth, requireAdmin, publicUser } from './auth.js';
 import { runScan, scanState } from './scanner.js';
 import { parseRulesText, saveRules, resetRules, sagaList } from './sagas.js';
-import { fetchPendingMetadata, metadataRunning, tmdbKey } from './tmdb.js';
+import { fetchPendingMetadata, metadataRunning, tmdbKey, searchTmdb, setTmdbId, unlockTitle } from './tmdb.js';
+import { seasonLabelOf } from './classify.js';
 
 export const adminRouter = express.Router();
 adminRouter.use(requireAuth, requireAdmin);
@@ -111,5 +112,68 @@ adminRouter.put('/sagas/:titleId', (req, res) => {
 
 adminRouter.delete('/sagas/:titleId', (req, res) => {
   if (!resetRules(Number(req.params.titleId))) return res.status(404).json({ error: 'Serie non trovata' });
+  res.json({ ok: true });
+});
+
+// Cartelle unite in una serie unica (ogni sottocartella = una stagione)
+function groupList() {
+  const out = [];
+  const lastSeg = (p) => p.replace(/\/$/, '').split('/').pop();
+  const merged = db.prepare("SELECT path, data FROM overrides WHERE mode = 'seasons'").all();
+  for (const m of merged) {
+    const t = db.prepare('SELECT id FROM titles WHERE key = ?').get('S:' + m.path);
+    const names = t ? db.prepare('SELECT name FROM seasons WHERE title_id = ? ORDER BY season').all(t.id).map((r) => r.name) : [];
+    let order = [];
+    try { order = JSON.parse(m.data || '[]'); } catch { /* ignora */ }
+    out.push({ path: m.path, name: lastSeg(m.path), merged: true, order: names.length ? names : order });
+  }
+  const mergedPaths = new Set(merged.map((m) => m.path));
+  const byParent = new Map();
+  for (const t of db.prepare("SELECT name, folder FROM titles WHERE kind = 'series'").all()) {
+    const parent = t.folder.replace(/[^/]+\/$/, '');
+    if (parent === '/' || parent === t.folder || mergedPaths.has(parent)) continue;
+    if (!byParent.has(parent)) byParent.set(parent, []);
+    byParent.get(parent).push(seasonLabelOf(lastSeg(parent), lastSeg(t.folder)));
+  }
+  for (const [path, kids] of byParent) {
+    if (kids.length >= 2) out.push({ path, name: lastSeg(path), merged: false, order: kids.sort((a, b) => a.localeCompare(b, 'it', { numeric: true })) });
+  }
+  return out.sort((a, b) => a.name.localeCompare(b.name, 'it'));
+}
+
+adminRouter.get('/groups', (req, res) => res.json({ groups: groupList() }));
+
+adminRouter.put('/groups', (req, res) => {
+  const p = String(req.body?.path || '');
+  if (!p) return res.status(400).json({ error: 'Percorso mancante' });
+  const order = Array.isArray(req.body?.order) ? req.body.order.map((x) => String(x).trim()).filter(Boolean) : [];
+  db.prepare('INSERT INTO overrides(path, mode, data) VALUES(?,?,?) ON CONFLICT(path) DO UPDATE SET mode=excluded.mode, data=excluded.data')
+    .run(p, req.body?.merge ? 'seasons' : 'noseasons', JSON.stringify(order));
+  if (!scanState.running) runScan();
+  res.json({ ok: true });
+});
+
+// Correzione manuale dell'abbinamento TMDB (locandine sbagliate o mancanti)
+adminRouter.get('/tmdb/search', async (req, res) => {
+  try {
+    const kind = req.query.kind === 'movie' ? 'movie' : 'series';
+    res.json({ results: await searchTmdb(kind, String(req.query.q || '')) });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+adminRouter.put('/titles/:id/tmdb', async (req, res) => {
+  try {
+    const ok = await setTmdbId(Number(req.params.id), Number(req.body?.tmdbId));
+    if (!ok) return res.status(404).json({ error: 'Titolo non trovato' });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+adminRouter.delete('/titles/:id/tmdb', async (req, res) => {
+  await unlockTitle(Number(req.params.id));
   res.json({ ok: true });
 });

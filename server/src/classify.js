@@ -4,6 +4,14 @@ import {
   stripSeasonMarker, cleanFolderName, commonPrefix,
 } from './parser.js';
 
+/** Nome di stagione di una sottocartella: toglie il nome della serie ("A tutto reality - Azione" -> "Azione"). */
+export function seasonLabelOf(parentName, childName) {
+  let name = childName;
+  if (name.toLowerCase().startsWith(parentName.toLowerCase())) name = name.slice(parentName.length);
+  name = cleanFolderName(name.replace(/^[\s\-–—:_.]+/, '')) || childName;
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
 function buildTree(dirs, files) {
   const nodes = new Map();
   const node = (p) => {
@@ -91,9 +99,43 @@ export function classify(dirs, files, overrides = {}) {
     out.push({ key: 'S:' + n.path, kind: 'series', name, year: null, grp: group(n), folder: n.path, files: entries });
   };
 
+  const overrideOf = (n) => {
+    const o = overrides[n.path] ?? overrides[n.path.replace(/\/$/, '')];
+    return typeof o === 'string' ? { mode: o } : o || {};
+  };
+
+  const seasonLabel = (parent, child) => seasonLabelOf(parent.name, child.name);
+
+  /** Una serie unica: ogni sottocartella con video e' una stagione (ordine = elenco `order`, poi alfabetico). */
+  const seasonsSeries = (n, order) => {
+    const kids = n.dirs.filter((d) => d.files.length > 0).map((d) => ({ d, label: seasonLabel(n, d) }));
+    if (!kids.length) return false;
+    const pos = (label) => order.findIndex((o) => o.toLowerCase() === label.toLowerCase());
+    kids.sort((a, b) => {
+      const pa = pos(a.label);
+      const pb = pos(b.label);
+      if (pa >= 0 && pb >= 0) return pa - pb;
+      if (pa >= 0) return -1;
+      if (pb >= 0) return 1;
+      return a.label.localeCompare(b.label, 'it', { numeric: true });
+    });
+    const entries = [];
+    const seasonNames = [];
+    kids.forEach((k, i) => {
+      seasonNames.push({ season: i + 1, name: k.label });
+      for (const e of episodeEntries(k.d.files, i + 1)) entries.push({ ...e, season: i + 1, explicit: false });
+    });
+    out.push({ key: 'S:' + n.path, kind: 'series', name: cleanFolderName(n.name), year: null, grp: group(n), folder: n.path, files: entries, seasonNames });
+    // eventuali video direttamente nella cartella restano film a parte
+    for (const f of n.files) movie(n, f);
+    return true;
+  };
+
   const visit = (n) => {
-    const mode = overrides[n.path] || overrides[n.path.replace(/\/$/, '')];
+    const ov = overrideOf(n);
+    const mode = ov.mode;
     if (mode === 'ignore') return;
+    if (mode === 'seasons' && seasonsSeries(n, Array.isArray(ov.data) ? ov.data : [])) return;
     const videos = n.files;
 
     const seasonDirs = n.dirs.filter((d) => seasonFromFolder(d.name) != null);

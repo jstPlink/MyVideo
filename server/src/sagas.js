@@ -91,7 +91,8 @@ function getRules(key) {
 export function applyRules(titleId) {
   const t = db.prepare("SELECT id, key FROM titles WHERE id = ? AND kind = 'series'").get(titleId);
   if (!t) return;
-  const rules = getRules(t.key) || [];
+  const rules = getRules(t.key);
+  if (rules === null) return; // nessuna regola: le stagioni restano quelle decise dalla scansione
   tx(() => {
     db.prepare('DELETE FROM seasons WHERE title_id = ?').run(t.id);
     if (!rules.length) {

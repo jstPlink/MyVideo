@@ -31,10 +31,14 @@ function applyScan(items) {
         id = Number(insTitle.run(it.key, it.kind, it.name, it.year, it.grp, it.folder, now).lastInsertRowid);
       }
       seenTitles.add(id);
+      db.prepare('DELETE FROM seasons WHERE title_id = ?').run(id);
+      for (const sn of it.seasonNames || []) db.prepare('INSERT INTO seasons(title_id, season, name) VALUES(?,?,?)').run(id, sn.season, sn.name);
       for (const f of it.files) {
         const fr = getFile.get(f.path);
         if (fr) {
           updFile.run(f.name, f.size, f.ext, id, f.season, f.episode, f.explicit ? 1 : 0, f.epTitle, fr.id);
+          // se il file cambia titolo (cartelle accorpate) l'avanzamento lo segue
+          db.prepare('UPDATE progress SET title_id = ? WHERE file_id = ?').run(id, fr.id);
           seenFiles.add(fr.id);
         } else {
           const fid = Number(insFile.run(f.path, f.name, f.size, f.ext, id, f.season, f.episode, f.explicit ? 1 : 0, f.epTitle).lastInsertRowid);
@@ -49,8 +53,29 @@ function applyScan(items) {
 
 export function getOverrides() {
   const o = {};
-  for (const r of db.prepare('SELECT path, mode FROM overrides').all()) o[r.path] = r.mode;
+  for (const r of db.prepare('SELECT path, mode, data FROM overrides').all()) {
+    let data = null;
+    try { data = r.data ? JSON.parse(r.data) : null; } catch { /* ignora */ }
+    o[r.path] = { mode: r.mode, data };
+  }
   return o;
+}
+
+/** Cartelle che per default vanno unite in una serie con stagioni (ordine cronologico delle stagioni). */
+const GROUP_PRESETS = [
+  {
+    match: /(^|\/)a tutto reality\/$/i,
+    order: ["L'isola", 'Azione', 'Il tour', "La vendetta dell'isola", 'All stars', 'Missione cosmo ridicola'],
+  },
+];
+
+function ensureGroupPresets(dirs) {
+  const ins = db.prepare("INSERT OR IGNORE INTO overrides(path, mode, data) VALUES(?, 'seasons', ?)");
+  for (const d of dirs) {
+    const dir = d.endsWith('/') ? d : d + '/';
+    const p = GROUP_PRESETS.find((g) => g.match.test(dir));
+    if (p) ins.run(dir, JSON.stringify(p.order));
+  }
 }
 
 export async function runScan(log = console.log) {
@@ -63,6 +88,7 @@ export async function runScan(log = console.log) {
   try {
     const { dirs, files } = await crawl((n) => { scanState.files = n; });
     const videos = files.filter((f) => isVideo(f.path));
+    ensureGroupPresets(dirs);
     const items = classify(dirs, videos, getOverrides());
     applyScan(items);
     applyAllSagas();

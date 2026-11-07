@@ -70,3 +70,21 @@ test('libreria reale (se disponibile)', { skip: !process.env.TREE_JSON }, () => 
   console.log(series.map((s) => `${s.name} [${s.grp}] ${s.files.length}`).join('\n'));
   console.log('film:', t.length - series.length);
 });
+
+test('cartelle accorpate in una serie con stagioni', () => {
+  const dirs = ['/Reality', '/Reality/Reality - Azione', '/Reality/Reality - L\'isola', '/Reality/Reality - All stars'];
+  const files = [
+    f('/Reality/Reality - Azione/Reality Azione - Episodio 1.mp4'), f('/Reality/Reality - Azione/Reality Azione - Episodio 2.mp4'),
+    f('/Reality/Reality - L\'isola/Reality Isola - Episodio 1.mp4'),
+    f('/Reality/Reality - All stars/5x01 Reality.mp4'),
+  ];
+  const ov = { '/Reality/': { mode: 'seasons', data: ["L'isola", 'Azione', 'All stars'] } };
+  const t = classify(dirs, files, ov);
+  assert.equal(t.length, 1);
+  assert.equal(t[0].name, 'Reality');
+  assert.deepEqual(t[0].seasonNames.map((s) => s.name), ["L'isola", 'Azione', 'All stars']);
+  assert.deepEqual(t[0].files.map((x) => [x.season, x.episode]).sort(), [[1, 1], [2, 1], [2, 2], [3, 1]]);
+  // senza ordine: alfabetico
+  const t2 = classify(dirs, files, { '/Reality/': { mode: 'seasons', data: [] } });
+  assert.deepEqual(t2[0].seasonNames.map((s) => s.name), ['All stars', 'Azione', "L'isola"]);
+});

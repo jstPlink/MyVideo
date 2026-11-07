@@ -11,6 +11,19 @@ L'APK e' la stessa web UI impacchettata con **Capacitor** (`web/android/`, `appI
 - libVLC decodifica sul telefono (HW se possibile): nessun carico sul NAS. Legge mkv, avi, rmvb, HEVC, AC3/DTS ecc.
 - Gli ABI inclusi sono `arm64-v8a` e `armeabi-v7a` (APK piu' leggero; niente x86).
 
+## Controlli del player (`VlcPlayerActivity`)
+
+| Azione | Effetto |
+|---|---|
+| Tocco sullo schermo | Pausa / riprendi (i comandi restano visibili in pausa, si nascondono dopo 4 s in riproduzione) |
+| Doppio tocco a sinistra | Indietro di 10 secondi (messaggio "-10 s") |
+| Doppio tocco a destra | Avanti di 30 secondi (messaggio "+30 s") |
+| Pulsante velocità | Cicla 1x -> 1.25x -> 1.5x -> 2x -> 1x |
+| Pulsante "Prossimo" (solo se esiste un episodio successivo) | Chiude il lettore e la web UI apre subito l'episodio dopo (`result.next`) |
+| Pulsanti -10 / +30, barra di avanzamento, Audio, Sottotitoli | Come prima |
+
+Alla fine di un episodio si passa automaticamente al successivo. I gesti sono gestiti da uno strato trasparente (`GestureDetector`) sopra il video: tocco singolo confermato = pausa, doppio tocco = salto in base a metà schermo sinistra/destra. Il plugin riceve `hasNext` da `Watch.tsx` e restituisce `{ position, duration, next }`.
+
 ## Tasto Indietro (navigazione a pila)
 
 `web/src/components/BackHandler.tsx` intercetta il tasto indietro di Android (`@capacitor/app`, evento `backButton`) e applica queste regole in base alla schermata corrente:

@@ -98,6 +98,14 @@ CREATE TABLE IF NOT EXISTS overrides (
 );
 `);
 
+// Migrazioni leggere: aggiunge colonne alle tabelle create dalle versioni precedenti.
+function addColumn(table, column, ddl) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (!cols.some((c) => c.name === column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${ddl}`);
+}
+addColumn('titles', 'meta_locked', 'INTEGER NOT NULL DEFAULT 0');
+addColumn('overrides', 'data', 'TEXT');
+
 export function tx(fn) {
   db.exec('BEGIN');
   try {
@@ -116,4 +124,11 @@ export function getSetting(key) {
 
 export function setSetting(key, value) {
   db.prepare('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(key, value);
+}
+
+// Algoritmo di abbinamento TMDB: quando cambia, i titoli non bloccati a mano vengono ricercati di nuovo.
+const META_ALGO = '2';
+if (getSetting('meta_algo') !== META_ALGO) {
+  db.exec("UPDATE titles SET meta_status = 'pending' WHERE meta_locked = 0");
+  setSetting('meta_algo', META_ALGO);
 }

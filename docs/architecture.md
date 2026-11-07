@@ -37,7 +37,7 @@ Il link di download di Seafile (`/seafhttp/...`) e' temporaneo: il server lo ris
 
 ## Database (SQLite, `/data/myvideo.db`)
 
-`users`, `settings`, `saga_rules` e `seasons` (saghe delle serie, vedi [library.md](library.md)), (chiave TMDB, segreto JWT generato), `titles` (film/serie con metadati), `files` (singoli video con stagione/episodio), `progress` (per utente e file), `mylist`, `overrides` (forzature cartelle).
+`users`, `settings`, `saga_rules` e `seasons` (saghe delle serie, vedi [library.md](library.md)), (chiave TMDB, segreto JWT generato), `titles` (film/serie con metadati), `files` (singoli video con stagione/episodio), `progress` (per utente e file), `mylist`, `overrides` (forzature cartelle: `series`, `movies`, `ignore`, `seasons`, `noseasons`; colonna `data` con l'ordine delle stagioni). `titles.meta_locked` indica un abbinamento TMDB scelto a mano.
 I titoli sono identificati da una chiave stabile (`M:<file>` o `S:<cartella>`): le riscansioni aggiornano senza perdere metadati, progressi e liste.
 
 ## Chiusura del flusso video (web)
