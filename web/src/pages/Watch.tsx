@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { absolute, api, getServer, getToken, isNative } from '../api';
 import { VlcPlayer } from '../native';
 
@@ -24,6 +24,7 @@ function saveProgress(fileId: number, position: number, duration: number) {
 export default function Watch() {
   const { fileId } = useParams();
   const nav = useNavigate();
+  const loc = useLocation();
   const [play, setPlay] = useState<Play | null>(null);
   const [error, setError] = useState('');
   const [failed, setFailed] = useState(false);
@@ -33,10 +34,14 @@ export default function Watch() {
   const lastSave = useRef(0);
   const hideTimer = useRef<number>();
 
+  // Pila di navigazione: si torna alla schermata da cui si e' partiti; se la pagina e' stata aperta
+  // direttamente (nessuna cronologia) si ripiega sul dettaglio del titolo.
   const back = useCallback(() => {
-    if (play) nav(`/title/${play.titleId}`, { replace: true });
-    else nav(-1);
-  }, [play, nav]);
+    if (loc.key !== 'default') nav(-1);
+    else nav(play ? `/title/${play.titleId}` : '/', { replace: true });
+  }, [play, nav, loc.key]);
+  const backRef = useRef(back);
+  backRef.current = back;
 
   useEffect(() => {
     setPlay(null); setError(''); setFailed(false); setNearEnd(false);
@@ -55,7 +60,7 @@ export default function Watch() {
         if (r.duration > 0) saveProgress(play.fileId, r.position, r.duration);
         const done = r.duration > 0 && (r.position / r.duration > 0.92 || r.duration - r.position < 90);
         if (done && play.nextFileId) nav(`/watch/${play.nextFileId}`, { replace: true });
-        else nav(`/title/${play.titleId}`, { replace: true });
+        else backRef.current();
       })
       .catch((e) => !cancelled && setError(e?.message || 'Impossibile avviare il lettore'));
     return () => { cancelled = true; };

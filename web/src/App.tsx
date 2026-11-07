@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './auth';
 import Navbar from './components/Navbar';
+import BackHandler from './components/BackHandler';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Browse from './pages/Browse';
@@ -19,6 +20,7 @@ export default function App() {
   const watching = loc.pathname.startsWith('/watch');
   return (
     <>
+      <BackHandler />
       {!watching && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />

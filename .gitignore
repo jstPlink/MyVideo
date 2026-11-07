@@ -15,3 +15,5 @@ web/android/app/src/main/assets/capacitor.plugins.json
 web/android/capacitor-cordova-android-plugins/
 *.keystore
 *.jks
+data-test*/
+data-test*.log

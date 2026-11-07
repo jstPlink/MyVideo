@@ -11,6 +11,18 @@ L'APK e' la stessa web UI impacchettata con **Capacitor** (`web/android/`, `appI
 - libVLC decodifica sul telefono (HW se possibile): nessun carico sul NAS. Legge mkv, avi, rmvb, HEVC, AC3/DTS ecc.
 - Gli ABI inclusi sono `arm64-v8a` e `armeabi-v7a` (APK piu' leggero; niente x86).
 
+## Tasto Indietro (navigazione a pila)
+
+`web/src/components/BackHandler.tsx` intercetta il tasto indietro di Android (`@capacitor/app`, evento `backButton`) e applica queste regole in base alla schermata corrente:
+
+| Schermata | Indietro |
+|---|---|
+| Dettaglio titolo `/title/:id`, player `/watch/:id` | schermata precedente nella pila (`navigate(-1)`); se la pagina e' stata aperta senza cronologia, Home |
+| Serie, Film, Lista, Cerca, Account, Admin | Home |
+| Home | dialogo "Uscire da MyVideo?" -> *Esci* chiude l'app, *Annulla* (o un altro Indietro) chiude il dialogo |
+
+Il cambio episodio automatico nel player usa `replace`, quindi non riempie la pila: dal player, Indietro porta sempre alla schermata da cui si e' partiti. Sul web il tasto indietro del browser resta quello normale.
+
 ## Ottenere l'APK
 
 Ogni versione pubblica su GitHub Releases un file `MyVideo-<versione>.apk` (workflow *Release*, job `apk`). Scaricalo dal telefono e installalo (serve consentire le "app da origini sconosciute").

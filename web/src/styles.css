@@ -159,6 +159,11 @@ td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .next-ep { position: absolute; right: 24px; bottom: 90px; }
 .player-msg { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; max-width: 640px; margin: 0 auto; }
 
+/* Dialogo di conferma uscita */
+.modal-back { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,.7); display: grid; place-items: center; padding: 20px; }
+.modal { background: #1f1f1f; border-radius: 8px; padding: 26px 24px; width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 20px; text-align: center; }
+.modal h2 { font-size: 1.2rem; }
+
 /* Mobile */
 @media (max-width: 820px) {
   :root { --nav-h: 56px; --pad: 14px; }
