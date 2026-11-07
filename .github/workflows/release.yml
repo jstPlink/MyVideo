@@ -52,6 +52,35 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  desktop:
+    needs: release
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Build installer
+        shell: bash
+        working-directory: desktop
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: |
+          npm ci
+          npx electron-builder --publish never
+      - name: Carica gli installer nella release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for f in desktop/dist/*.exe desktop/dist/*.dmg desktop/dist/*.AppImage; do
+            if [ -f "$f" ]; then gh release upload "$GITHUB_REF_NAME" "$f" --clobber; fi
+          done
+
   apk:
     needs: release
     runs-on: ubuntu-latest

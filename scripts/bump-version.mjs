@@ -1,5 +1,5 @@
 // Uso: node scripts/bump-version.mjs <x.y.z>
-// Allinea VERSION, server/package.json e web/package.json (e i relativi lock file).
+// Allinea VERSION, server/package.json, web/package.json e desktop/package.json (e i relativi lock file).
 import fs from 'node:fs';
 
 const v = process.argv[2];
@@ -8,7 +8,7 @@ if (!/^\d+\.\d+\.\d+$/.test(v || '')) {
   process.exit(1);
 }
 fs.writeFileSync('VERSION', v + '\n');
-for (const dir of ['server', 'web']) {
+for (const dir of ['server', 'web', 'desktop']) {
   for (const f of ['package.json', 'package-lock.json']) {
     const p = `${dir}/${f}`;
     if (!fs.existsSync(p)) continue;

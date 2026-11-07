@@ -3,6 +3,14 @@
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/), versioni semver.
 Ogni commit incrementa la versione e viene pubblicato su GitHub con il tag `vX.Y.Z`.
 
+## [0.6.0] - 2026-11-07
+### Aggiunto
+- **App desktop** (Electron, cartella `desktop/`): finestra con l'interfaccia di MyVideo collegata al tuo server. Al primo avvio chiede l'indirizzo (pulsanti http/https + host) e verifica che sia un server MyVideo. Installer: Windows (`MyVideo-Setup-X.Y.Z.exe`), macOS (`.dmg`) e Linux (`.AppImage`), pubblicati nelle release dal workflow *Release* (job `desktop`).
+- Per i formati che il browser non legge (avi, rmvb, ...) l'app desktop apre il video direttamente in VLC, se installato (pulsante "Apri in VLC").
+- Menu: Cambia server (Ctrl+Maiusc+S), Ricarica (F5), Indietro/Avanti (Alt+←/→), Schermo intero (F11), zoom. Ricorda dimensione e posizione della finestra; una sola istanza alla volta.
+### Modificato
+- `scripts/bump-version.mjs` e l'hook pre-commit allineano e controllano anche `desktop/package.json`.
+
 ## [0.5.0] - 2026-11-07
 ### Modificato
 - Player Android ridisegnato sul modello di VLC per Android: barra superiore con indietro, titolo, audio, sottotitoli e velocità; in basso tempo trascorso, seekbar arancione e durata (un tocco sulla durata alterna il tempo rimanente); riga comandi con blocco, precedente, -10, play/pausa, +30, successivo e formato schermo.

@@ -3,6 +3,9 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { absolute, api, getServer, getToken, isNative } from '../api';
 import { VlcPlayer } from '../native';
 
+interface Desktop { isDesktop: boolean; openInVlc: (url: string) => Promise<{ ok: boolean; error?: string }> }
+const desktop: Desktop | undefined = (window as unknown as { myvideoDesktop?: Desktop }).myvideoDesktop;
+
 interface Play {
   fileId: number; titleId: number; ext: string; name: string; kind: string; title: string;
   streamPath: string; position: number; nextFileId: number | null; prevFileId: number | null;
@@ -28,6 +31,7 @@ export default function Watch() {
   const [play, setPlay] = useState<Play | null>(null);
   const [error, setError] = useState('');
   const [failed, setFailed] = useState(false);
+  const [vlcMsg, setVlcMsg] = useState('');
   const [uiVisible, setUiVisible] = useState(true);
   const [nearEnd, setNearEnd] = useState(false);
   const videoEl = useRef<HTMLVideoElement | null>(null);
@@ -122,11 +126,16 @@ export default function Watch() {
           Aprilo con VLC, che legge qualsiasi formato, oppure usa l'app Android di MyVideo.
         </p>
         <div className="hero-actions center">
-          <a className="btn primary" href={`vlc://${streamUrl}`}>Apri in VLC</a>
+          {desktop ? (
+            <button className="btn primary" onClick={async () => { const r = await desktop.openInVlc(streamUrl); setVlcMsg(r.ok ? 'Aperto in VLC.' : r.error || 'Impossibile aprire VLC'); }}>Apri in VLC</button>
+          ) : (
+            <a className="btn primary" href={`vlc://${streamUrl}`}>Apri in VLC</a>
+          )}
           <button className="btn secondary" onClick={() => navigator.clipboard?.writeText(streamUrl)}>Copia indirizzo</button>
           <a className="btn secondary" href={streamUrl} download={play.name}>Scarica</a>
           <button className="btn secondary" onClick={back}>Indietro</button>
         </div>
+        {vlcMsg && <p className="muted">{vlcMsg}</p>}
         <p className="muted small">In VLC: Media → Apri flusso di rete → incolla l'indirizzo.</p>
       </div>
     );

@@ -19,6 +19,7 @@ Gira in Docker su NAS, su una sola porta; Cloudflare Tunnel e' configurato dall'
 ## Struttura
 - `server/` Node 24 + Express + `node:sqlite`, JavaScript ESM (test: `cd server && npm test`)
 - `web/` React + Vite + TypeScript (build: `cd web && npm run build`), `web/android/` progetto Capacitor
+- `desktop/` app desktop Electron (installer Windows/macOS/Linux; `npm run dist`)
 - `docs/` documentazione, `scripts/` utilita', `.github/workflows/` CI e release
 
 ## Comandi utili

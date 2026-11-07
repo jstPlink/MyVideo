@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<title>MyVideo</title>
+<style>
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #141414; color: #e5e5e5; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; text-align: center; }
+  main { max-width: 440px; padding: 24px; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+  .logo { color: #e50914; font-weight: 900; letter-spacing: .04em; font-size: 2rem; text-transform: uppercase; }
+  p { margin: 0; color: #9a9a9a; line-height: 1.4; }
+  code { color: #ddd; }
+  .row { display: flex; gap: 10px; margin-top: 6px; }
+  button { padding: 11px 22px; border: 0; border-radius: 4px; font: inherit; font-weight: 700; cursor: pointer; background: #333; color: #fff; }
+  button.p { background: #e50914; }
+</style>
+</head>
+<body>
+  <main>
+    <div class="logo">MyVideo</div>
+    <h2 style="margin:0">Server non raggiungibile</h2>
+    <p id="msg"></p>
+    <div class="row">
+      <button class="p" id="retry">Riprova</button>
+      <button id="change">Cambia server</button>
+    </div>
+  </main>
+<script>
+  const q = new URLSearchParams(location.search);
+  document.getElementById('msg').innerHTML = 'Impossibile collegarsi a <code></code>. Controlla la connessione o l\'indirizzo del server.';
+  document.querySelector('code').textContent = q.get('server') || '(non impostato)';
+  document.getElementById('retry').onclick = () => window.myvideoDesktop.retry();
+  document.getElementById('change').onclick = () => window.myvideoDesktop.changeServer();
+</script>
+</body>
+</html>

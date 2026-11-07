@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MyVideo</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(ellipse at top, #2a0a0c 0%, #000 70%); color: #e5e5e5; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
+  form { width: 100%; max-width: 420px; padding: 40px; background: rgba(0,0,0,.78); border-radius: 6px; display: flex; flex-direction: column; gap: 14px; }
+  .logo { color: #e50914; font-weight: 900; letter-spacing: .04em; font-size: 2.2rem; text-transform: uppercase; }
+  h1 { margin: 0; font-size: 1.6rem; }
+  p { margin: 0; color: #9a9a9a; font-size: .9rem; line-height: 1.4; }
+  .scheme { display: flex; gap: 8px; }
+  .scheme button { flex: 1; padding: 12px 0; border-radius: 4px; border: 1px solid #555; background: #2a2a2a; color: #bbb; font: inherit; font-weight: 700; cursor: pointer; }
+  .scheme button.on { background: #e50914; border-color: #e50914; color: #fff; }
+  input { width: 100%; padding: 14px 16px; border-radius: 4px; border: 1px solid #555; background: #333; color: #fff; font: inherit; outline: 0; }
+  input:focus { border-color: #fff; }
+  .go { padding: 14px; border: 0; border-radius: 4px; background: #e50914; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+  .go:disabled { opacity: .6; cursor: default; }
+  .err { background: #e87c03; color: #000; padding: 10px 14px; border-radius: 4px; font-size: .9rem; display: none; }
+</style>
+</head>
+<body>
+  <form id="f">
+    <div class="logo">MyVideo</div>
+    <h1>Collega il server</h1>
+    <p>Scegli http o https e scrivi solo l'indirizzo, ad esempio <b>myvideo.fplinio.it</b> (https) oppure <b>192.168.1.10:8090</b> (http, rete locale).</p>
+    <div class="err" id="err"></div>
+    <div class="scheme">
+      <button type="button" data-s="https" class="on">https://</button>
+      <button type="button" data-s="http">http://</button>
+    </div>
+    <input id="host" type="text" placeholder="myvideo.fplinio.it" autocomplete="off" spellcheck="false" autofocus required />
+    <button class="go" id="go" type="submit">Connetti</button>
+  </form>
+<script>
+  const api = window.myvideoDesktop;
+  let scheme = 'https';
+  const host = document.getElementById('host');
+  const err = document.getElementById('err');
+  const setScheme = (s) => {
+    scheme = s;
+    document.querySelectorAll('.scheme button').forEach((b) => b.classList.toggle('on', b.dataset.s === s));
+  };
+  document.querySelectorAll('.scheme button').forEach((b) => b.addEventListener('click', () => setScheme(b.dataset.s)));
+
+  api.getServer().then((s) => {
+    if (!s) return;
+    const m = s.match(/^(https?):\/\/(.*)$/i);
+    if (m) { setScheme(m[1].toLowerCase()); host.value = m[2]; }
+  });
+
+  document.getElementById('f').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    err.style.display = 'none';
+    let h = host.value.trim();
+    let s = scheme;
+    const m = h.match(/^(https?):\/\/(.*)$/i);
+    if (m) { s = m[1].toLowerCase(); h = m[2]; }
+    h = h.replace(/\/+$/, '');
+    if (!h) return;
+    const url = s + '://' + h;
+    const go = document.getElementById('go');
+    go.disabled = true; go.textContent = 'Verifica…';
+    try {
+      const r = await fetch(url + '/api/status', { signal: AbortSignal.timeout(8000) });
+      const j = await r.json();
+      if (j.name !== 'MyVideo') throw new Error('non MyVideo');
+    } catch {
+      err.textContent = 'Nessun server MyVideo raggiungibile a ' + url + '. Controlla indirizzo e protocollo.';
+      err.style.display = 'block';
+      go.disabled = false; go.textContent = 'Connetti';
+      return;
+    }
+    const res = await api.saveServer(url);
+    if (!res.ok) { err.textContent = res.error; err.style.display = 'block'; go.disabled = false; go.textContent = 'Connetti'; }
+  });
+</script>
+</body>
+</html>

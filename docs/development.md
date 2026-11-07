@@ -37,6 +37,7 @@ Ad ogni commit:
 Il tag avvia il workflow **Release** (`.github/workflows/release.yml`):
 - `release`: crea la release GitHub con le note estratte dal CHANGELOG (`scripts/release-notes.sh`);
 - `docker`: pubblica `ghcr.io/jstplink/myvideo:<versione>` e `:latest` (amd64 + arm64);
+- `desktop`: costruisce gli installer Electron (Windows, macOS, Linux) e li allega alla release;
 - `apk`: compila e firma l'APK e lo allega alla release (usa l'SDK Android gia' installato sul runner Ubuntu, accetta le licenze con `sdkmanager`).
 
 Il workflow **CI** (`ci.yml`) esegue test, build web e build Docker (senza push) ad ogni push su `main` e sulle PR.
