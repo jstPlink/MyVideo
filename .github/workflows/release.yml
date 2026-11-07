@@ -64,7 +64,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-      - name: Android SDK (gia' presente sul runner: solo licenze e piattaforma)
+      - name: "Android SDK (gia' presente sul runner, solo licenze e piattaforma)"
         run: |
           SDKM="$(ls "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager | head -1)"
           yes | "$SDKM" --licenses > /dev/null || true

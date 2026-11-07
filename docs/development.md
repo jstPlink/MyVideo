@@ -43,6 +43,9 @@ Il workflow **CI** (`ci.yml`) esegue test, build web e build Docker (senza push)
 
 Dopo un clone, attiva l'hook: `git config core.hooksPath .githooks`.
 
+## Note sui workflow
+- I valori YAML con `:` (anche nei `name:` dei passi) vanno tra virgolette, altrimenti il workflow risulta non valido e non parte. Verifica con `python -c "import yaml;yaml.safe_load(open('.github/workflows/release.yml'))"`.
+
 ## Note per Windows
 - Git Bash converte i percorsi che iniziano con `/`: usare `MSYS_NO_PATHCONV=1` con `curl`.
 - Per terminare un server di prova: `Get-NetTCPConnection -LocalPort 8099 | % { Stop-Process -Id $_.OwningProcess }`.
