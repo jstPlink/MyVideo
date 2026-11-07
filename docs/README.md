@@ -9,6 +9,7 @@ Versione descritta: vedi `VERSION` / [CHANGELOG](../CHANGELOG.md). Questa docume
 | [deployment.md](deployment.md) | Docker sul NAS, variabili d'ambiente, Cloudflare Tunnel, aggiornamenti, backup |
 | [android-app.md](android-app.md) | App Android: Capacitor, lettore libVLC, build e firma dell'APK |
 | [desktop-app.md](desktop-app.md) | App desktop Electron: installazione, uso, VLC, build |
+| [statistics.md](statistics.md) | Statistiche di visione: cosa si vede, come si registra, esportazione |
 | [api.md](api.md) | Endpoint REST |
 | [development.md](development.md) | Sviluppo locale, test, regole di versione e rilascio |
 

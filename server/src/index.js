@@ -6,6 +6,7 @@ import { db } from './db.js';
 import { authRouter, userCount } from './auth.js';
 import { apiRouter } from './api.js';
 import { adminRouter } from './admin.js';
+import { watchRouter, statsRouter } from './watch.js';
 import { runScan } from './scanner.js';
 import { seafileConfigured } from './seafile.js';
 import { fetchPendingMetadata } from './tmdb.js';
@@ -37,6 +38,8 @@ app.get('/api/status', (req, res) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/watch', watchRouter);
+app.use('/api/stats', statsRouter);
 app.use('/api', apiRouter);
 app.use('/api', (req, res) => res.status(404).json({ error: 'Non trovato' }));
 

@@ -92,6 +92,36 @@ CREATE TABLE IF NOT EXISTS seasons (
   PRIMARY KEY (title_id, season)
 );
 
+-- Storico di visione. Nomi copiati nella sessione (denormalizzati) cosi' la cronologia
+-- resta leggibile anche se la libreria cambia; nessuna FK su file/titoli.
+CREATE TABLE IF NOT EXISTS watch_sessions (
+  id TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  file_id INTEGER,
+  title_id INTEGER,
+  title_name TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  ep_label TEXT,
+  file_name TEXT,
+  started_at INTEGER NOT NULL,
+  ended_at INTEGER NOT NULL,
+  seconds REAL NOT NULL DEFAULT 0,
+  tz INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_ws_user_start ON watch_sessions(user_id, started_at);
+
+-- Secondi guardati per utente, video, giorno e ora locali del client.
+CREATE TABLE IF NOT EXISTS watch_buckets (
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  file_id INTEGER NOT NULL,
+  title_id INTEGER,
+  day TEXT NOT NULL,
+  hour INTEGER NOT NULL,
+  seconds REAL NOT NULL DEFAULT 0,
+  PRIMARY KEY (user_id, file_id, day, hour)
+);
+CREATE INDEX IF NOT EXISTS idx_wb_user_day ON watch_buckets(user_id, day);
+
 CREATE TABLE IF NOT EXISTS overrides (
   path TEXT PRIMARY KEY,
   mode TEXT NOT NULL

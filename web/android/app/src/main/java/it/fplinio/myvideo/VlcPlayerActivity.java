@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.TypedValue;
 import android.view.GestureDetector;
@@ -94,6 +95,10 @@ public class VlcPlayerActivity extends AppCompatActivity {
     private boolean ended = false;
     private boolean finishing = false;
     private String error = null;
+    // statistiche: secondi realmente guardati (solo in riproduzione, in primo piano)
+    private final long startedAtWall = System.currentTimeMillis();
+    private long watchedMs = 0;
+    private long lastWatchTick = 0;
     private long lastTickTime = -1;
     private int stalledTicks = 0;
 
@@ -117,6 +122,19 @@ public class VlcPlayerActivity extends AppCompatActivity {
      * ogni secondo controlliamo stato e tempo. Se il lettore e' Ended/Stopped/Error vicino alla fine, o il tempo
      * non avanza da 4 s negli ultimi 45 s di video, l'episodio e' considerato finito.
      */
+    private final Runnable watchTick = new Runnable() {
+        @Override public void run() {
+            accumulateWatch();
+            handler.postDelayed(this, 1000);
+        }
+    };
+
+    private void accumulateWatch() {
+        long now = SystemClock.elapsedRealtime();
+        if (player != null && lastWatchTick > 0 && player.isPlaying()) watchedMs += now - lastWatchTick;
+        lastWatchTick = now;
+    }
+
     private final Runnable endWatch = new Runnable() {
         @Override public void run() {
             if (player == null || finishing) return;
@@ -424,6 +442,8 @@ public class VlcPlayerActivity extends AppCompatActivity {
             }
         });
         player.play();
+        lastWatchTick = SystemClock.elapsedRealtime();
+        handler.postDelayed(watchTick, 1000);
         handler.postDelayed(endWatch, 2000);
         scheduleHide();
     }
@@ -690,6 +710,10 @@ public class VlcPlayerActivity extends AppCompatActivity {
             data.putExtra("duration", lengthMs / 1000.0);
             data.putExtra("next", nextRequested);
             data.putExtra("prev", prevRequested);
+            accumulateWatch();
+            data.putExtra("watched", watchedMs / 1000.0);
+            data.putExtra("startedAt", startedAtWall);
+            data.putExtra("endedAt", System.currentTimeMillis());
         }
         setResult(RESULT_OK, data);
         finish();

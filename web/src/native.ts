@@ -1,6 +1,6 @@
 import { registerPlugin } from '@capacitor/core';
 
-export interface VlcResult { position: number; duration: number; next?: boolean; prev?: boolean }
+export interface VlcResult { position: number; duration: number; next?: boolean; prev?: boolean; watched?: number; startedAt?: number; endedAt?: number }
 
 /** Plugin nativo Android (libVLC): legge qualsiasi formato, decodifica sul telefono. */
 interface VlcPlayerPlugin {

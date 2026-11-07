@@ -44,6 +44,10 @@ export default function Navbar() {
             </button>
             <input ref={input} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Titoli, generi" />
           </form>
+          <Link to="/stats" className="stats-btn" aria-label="Statistiche" title="Statistiche">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></svg>
+            <span>Statistiche</span>
+          </Link>
           <div className="profile">
             <button className="avatar" onClick={() => setMenuOpen((o) => !o)} aria-label="Profilo">{user?.email[0].toUpperCase()}</button>
             {menuOpen && (

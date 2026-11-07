@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { absolute, api, getServer, getToken, isNative } from '../api';
 import { VlcPlayer } from '../native';
+import { WatchTracker, newSessionId, sendWatch } from '../watch';
 
 interface Desktop { isDesktop: boolean; openInVlc: (url: string) => Promise<{ ok: boolean; error?: string }> }
 const desktop: Desktop | undefined = (window as unknown as { myvideoDesktop?: Desktop }).myvideoDesktop;
@@ -35,6 +36,7 @@ export default function Watch() {
   const [uiVisible, setUiVisible] = useState(true);
   const [nearEnd, setNearEnd] = useState(false);
   const videoEl = useRef<HTMLVideoElement | null>(null);
+  const trackerRef = useRef<WatchTracker | null>(null);
   const playRef = useRef<Play | null>(null);
   // Quando il <video> esce dalla pagina: salva il punto raggiunto e chiude davvero il flusso di rete
   // (altrimenti il browser lascia la connessione aperta e le richieste successive possono bloccarsi).
@@ -77,6 +79,13 @@ export default function Watch() {
     let cancelled = false;
     VlcPlayer.play({ url: streamUrl, title: play.title, position: play.position, hasNext: !!play.nextFileId, hasPrev: !!play.prevFileId })
       .then((r) => {
+        // statistiche: tempo realmente guardato nel lettore nativo
+        if (r.watched && r.watched >= 3) {
+          sendWatch({
+            sessionId: newSessionId(), fileId: play.fileId,
+            startedAt: r.startedAt || Date.now() - r.watched * 1000, endedAt: r.endedAt || Date.now(), seconds: r.watched,
+          });
+        }
         if (cancelled) return;
         if (r.duration > 0) saveProgress(play.fileId, r.position, r.duration);
         const done = r.duration > 0 && (r.position / r.duration > 0.92 || r.duration - r.position < 90);
@@ -96,6 +105,25 @@ export default function Watch() {
     };
     window.addEventListener('pagehide', onHide);
     return () => window.removeEventListener('pagehide', onHide);
+  }, [play]);
+
+  // Statistiche (web/desktop): conta i secondi di riproduzione e li invia al server
+  useEffect(() => {
+    if (!play || isNative) return;
+    const tracker = new WatchTracker(play.fileId);
+    trackerRef.current = tracker;
+    const id = window.setInterval(() => {
+      const v = videoEl.current;
+      tracker.tick(!!v && !v.paused && !v.ended && v.readyState > 2);
+    }, 1000);
+    const onHide = () => tracker.flush();
+    window.addEventListener('pagehide', onHide);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener('pagehide', onHide);
+      tracker.flush();
+      trackerRef.current = null;
+    };
   }, [play]);
 
   useEffect(() => {
@@ -159,7 +187,7 @@ export default function Watch() {
             saveProgress(play.fileId, v.currentTime, v.duration);
           }
         }}
-        onPause={(e) => { const v = e.currentTarget; if (v.duration) saveProgress(play.fileId, v.currentTime, v.duration); }}
+        onPause={(e) => { const v = e.currentTarget; trackerRef.current?.flush(); if (v.duration) saveProgress(play.fileId, v.currentTime, v.duration); }}
         onEnded={(e) => {
           const v = e.currentTarget;
           saveProgress(play.fileId, v.duration, v.duration);

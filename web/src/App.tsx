@@ -9,6 +9,7 @@ import TitlePage from './pages/Title';
 import Watch from './pages/Watch';
 import Account from './pages/Account';
 import Admin from './pages/Admin';
+import Stats from './pages/Stats';
 
 export default function App() {
   const { user, ready } = useAuth();
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/search" element={<Browse mode="search" />} />
         <Route path="/title/:id" element={<TitlePage />} />
         <Route path="/watch/:fileId" element={<Watch />} />
+        <Route path="/stats" element={<Stats />} />
         <Route path="/account" element={<Account />} />
         <Route path="/admin" element={user.role === 'admin' ? <Admin /> : <Navigate to="/" />} />
         <Route path="*" element={<Navigate to="/" />} />

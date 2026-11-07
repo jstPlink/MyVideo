@@ -177,6 +177,47 @@ textarea:focus { border-color: #fff; }
 .scheme button { flex: 1; padding: 12px 0; border-radius: 4px; border: 1px solid #555; background: #2a2a2a; color: #bbb; font-weight: 700; font-size: 1rem; }
 .scheme button.on { background: var(--red); border-color: var(--red); color: #fff; }
 
+/* Statistiche */
+.stats-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 4px; color: #d0d0d0; font-size: .9rem; }
+.stats-btn:hover, .stats-btn.active { color: #fff; background: rgba(255,255,255,.1); }
+.stats { padding: calc(var(--nav-h) + 24px) var(--pad) 70px; max-width: 1200px; margin: 0 auto; }
+.stats h1 { font-size: 1.8rem; margin-bottom: 4px; }
+.stats-head { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; justify-content: space-between; margin-bottom: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button, .tabs button { padding: 8px 14px; border-radius: 999px; border: 1px solid #444; background: #232323; color: #bbb; font-weight: 600; font-size: .85rem; }
+.chips button.on, .tabs button.on { background: var(--red); border-color: var(--red); color: #fff; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-top: 16px; }
+.kpi { background: var(--panel); border-radius: 6px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; }
+.kpi span { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+.kpi b { font-size: 1.9rem; font-weight: 800; }
+.kpi small { color: var(--muted); font-size: .78rem; }
+.stats .panel { margin-top: 16px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.two .panel { margin-top: 16px; min-width: 0; }
+.chart { width: 100%; height: auto; display: block; }
+.heat { display: flex; flex-direction: column; gap: 3px; font-size: .7rem; color: var(--muted); overflow-x: auto; }
+.heat-hours, .heat-row { display: grid; grid-template-columns: 34px repeat(24, minmax(10px, 1fr)); gap: 3px; align-items: center; min-width: 380px; }
+.heat-hours span { text-align: center; }
+.heat-row i { aspect-ratio: 1; min-height: 12px; border-radius: 2px; background: #262626; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+.toplist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.tl { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 4px; }
+a.tl:hover { background: #2a2a2a; }
+.tl img, .ph-mini { width: 40px; height: 60px; object-fit: cover; border-radius: 3px; background: #2b2b2b; flex: none; }
+.tl-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.tl-text strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-text small { color: var(--muted); font-size: .75rem; }
+.tl-bar { display: block; height: 5px; background: #2d2d2d; border-radius: 3px; overflow: hidden; }
+.tl-bar i { display: block; height: 100%; background: var(--red); }
+tr.click { cursor: pointer; }
+tr.click:hover td { background: #262626; }
+.caret { color: var(--muted); margin-left: 8px; }
+.vdays { list-style: none; margin: 0; padding: 4px 0 8px; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px 18px; }
+.vdays li { display: flex; justify-content: space-between; font-size: .85rem; border-bottom: 1px dotted #333; padding: 3px 0; }
+.export { display: flex; flex-direction: column; gap: 8px; }
+.export > div { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; border-bottom: 1px solid #2c2c2c; }
+.export span { display: flex; gap: 6px; }
+
 /* Dialogo di conferma uscita */
 .modal-back { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,.7); display: grid; place-items: center; padding: 20px; }
 .modal { background: #1f1f1f; border-radius: 8px; padding: 26px 24px; width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 20px; text-align: center; }
@@ -197,6 +238,9 @@ textarea:focus { border-color: #fff; }
   .card.wide { width: 220px; }
   .card:hover { transform: none; box-shadow: none; }
   .arrow { display: none; }
+  .stats-btn span { display: none; }
+  .two { grid-template-columns: 1fr; }
+  .kpi b { font-size: 1.5rem; }
   .grid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
   .ep-thumb { width: 118px; }
   .ep-num { display: none; }

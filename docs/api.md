@@ -26,6 +26,17 @@ Base: `/api`. Formato JSON. Autenticazione: header `Authorization: Bearer <token
 | POST | `/progress` | `{ fileId, position, duration }` (secondi); completato oltre il 92% |
 | DELETE | `/progress/title/:titleId` | Azzera l'avanzamento di un titolo |
 
+## Statistiche di visione
+
+| Metodo | Percorso | Descrizione |
+|---|---|---|
+| POST | `/watch` | `{ sessionId, fileId, startedAt, endedAt, seconds, tz }`: aggiunge secondi guardati a una sessione (la crea se manca) |
+| GET | `/stats?range=7d\|30d\|90d\|365d\|all&tz=<minuti>` | Riepilogo, `daily`, `hourly`, `heat` (7x24), `topTitles`, `videos`, `recent` |
+| GET | `/stats/video/:fileId?range=&tz=` | Secondi per giorno di un video |
+| GET | `/stats/export?type=sessions\|daily\|hourly\|videos&format=csv\|json&range=&tz=&all=1` | Download (`all=1` solo admin) |
+
+`tz` e' `Date.getTimezoneOffset()` del client (minuti, UTC meno locale). Dettagli in [statistics.md](statistics.md).
+
 ## Amministratore (`/admin`)
 
 | Metodo | Percorso | Descrizione |

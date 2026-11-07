@@ -3,6 +3,15 @@
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/), versioni semver.
 Ogni commit incrementa la versione e viene pubblicato su GitHub con il tag `vX.Y.Z`.
 
+## [0.7.0] - 2026-11-07
+### Aggiunto
+- **Statistiche di visione**: pulsante "Statistiche" accanto al profilo e pagina dedicata con tempo guardato per giorno (o settimana), per ora del giorno, mappa di calore giorno-della-settimana x ora, titoli più guardati, tempo per singolo video con dettaglio giorno per giorno e cronologia delle sessioni con data e ora. Periodi: 7 / 30 / 90 giorni, anno, sempre.
+- Ogni visione viene salvata nel database (`watch_sessions` e `watch_buckets`) dal web, dall'app desktop e dall'app Android (il lettore VLC conta i secondi realmente guardati e li invia alla chiusura). Si conta solo il tempo di riproduzione, non le pause.
+- Esportazione dei dati in CSV e JSON (sessioni, per giorno, per giorno e ora, per video); gli amministratori possono esportare anche i dati di tutti gli utenti.
+- Nuove API: `POST /api/watch`, `GET /api/stats`, `GET /api/stats/video/:fileId`, `GET /api/stats/export`.
+### Nota
+- Lo storico parte da questa versione: le visioni precedenti non sono ricostruibili.
+
 ## [0.6.0] - 2026-11-07
 ### Aggiunto
 - **App desktop** (Electron, cartella `desktop/`): finestra con l'interfaccia di MyVideo collegata al tuo server. Al primo avvio chiede l'indirizzo (pulsanti http/https + host) e verifica che sia un server MyVideo. Installer: Windows (`MyVideo-Setup-X.Y.Z.exe`), macOS (`.dmg`) e Linux (`.AppImage`), pubblicati nelle release dal workflow *Release* (job `desktop`).

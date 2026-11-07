@@ -48,6 +48,9 @@ public class VlcPlayerPlugin extends Plugin {
         ret.put("duration", data != null ? data.getDoubleExtra("duration", 0) : 0);
         ret.put("next", data != null && data.getBooleanExtra("next", false));
         ret.put("prev", data != null && data.getBooleanExtra("prev", false));
+        ret.put("watched", data != null ? data.getDoubleExtra("watched", 0) : 0);
+        ret.put("startedAt", data != null ? data.getLongExtra("startedAt", 0L) : 0L);
+        ret.put("endedAt", data != null ? data.getLongExtra("endedAt", 0L) : 0L);
         call.resolve(ret);
     }
 }
