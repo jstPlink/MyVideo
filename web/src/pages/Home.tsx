@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, backdrop, poster, type Card, type Row as RowT } from '../api';
 import Row from '../components/Row';
+import ErrorBox from '../components/ErrorBox';
 
 interface HomeData { hero: Card | null; rows: RowT[]; empty: boolean }
 
@@ -14,7 +15,7 @@ export default function Home() {
     api<HomeData>('/home').then(setData).catch((e) => setError(e.message));
   }, []);
 
-  if (error) return <div className="page-msg">{error}</div>;
+  if (error) return <ErrorBox message={error} />;
   if (!data) return <div className="page-msg">Caricamento…</div>;
   if (data.empty) {
     return (

@@ -37,8 +37,12 @@ Il link di download di Seafile (`/seafhttp/...`) e' temporaneo: il server lo ris
 
 ## Database (SQLite, `/data/myvideo.db`)
 
-`users`, `settings` (chiave TMDB, segreto JWT generato), `titles` (film/serie con metadati), `files` (singoli video con stagione/episodio), `progress` (per utente e file), `mylist`, `overrides` (forzature cartelle).
+`users`, `settings`, `saga_rules` e `seasons` (saghe delle serie, vedi [library.md](library.md)), (chiave TMDB, segreto JWT generato), `titles` (film/serie con metadati), `files` (singoli video con stagione/episodio), `progress` (per utente e file), `mylist`, `overrides` (forzature cartelle).
 I titoli sono identificati da una chiave stabile (`M:<file>` o `S:<cartella>`): le riscansioni aggiornano senza perdere metadati, progressi e liste.
+
+## Chiusura del flusso video (web)
+
+Quando il player web esce dalla pagina, `Watch.tsx` salva l'ultimo punto, mette in pausa e svuota `src` del `<video>` (`load()`): senza questo il browser puo' lasciare aperta la connessione di streaming e, con molte richieste aperte verso lo stesso host, le pagine successive restano in caricamento. Le richieste API hanno inoltre un timeout di 20 s e le pagine mostrano "Riprova".
 
 ## Autenticazione e sicurezza
 

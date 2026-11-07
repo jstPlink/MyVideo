@@ -18,7 +18,7 @@ Base: `/api`. Formato JSON. Autenticazione: header `Authorization: Bearer <token
 | POST | `/auth/password` | `{ currentPassword, newPassword }` -> nuovo token (i vecchi decadono) |
 | GET | `/home` | `{ hero, rows[], empty }` (righe: continua a guardare, lista, recenti, serie, cartelle) |
 | GET | `/titles?kind=movie\|series&q=testo` | Elenco/ricerca (max 500) |
-| GET | `/titles/:id` | Dettaglio, file/episodi con avanzamento, `resume`, titoli correlati |
+| GET | `/titles/:id` | Dettaglio, file/episodi con avanzamento, `resume`, `seasons` (nomi delle saghe, se definiti), titoli correlati |
 | GET | `/mylist` | La mia lista |
 | POST | `/mylist/:titleId` | Aggiunge/rimuove -> `{ inList }` |
 | GET | `/play/:fileId` | `{ streamPath, title, position, nextFileId, ext, ... }` con token di streaming di 12 h |
@@ -38,4 +38,7 @@ Base: `/api`. Formato JSON. Autenticazione: header `Authorization: Bearer <token
 | POST | `/admin/scan` | Avvia la scansione |
 | POST | `/admin/metadata/retry` | Riprova i titoli senza metadati |
 | PUT | `/admin/settings` | `{ tmdbKey }` |
+| GET | `/admin/sagas` | Serie con le regole di saga (`text`, `source`, `presetAvailable`) |
+| PUT | `/admin/sagas/:titleId` | `{ text }` righe `<episodio> <nome>`; vuoto = stagione unica |
+| DELETE | `/admin/sagas/:titleId` | Ripristina le regole predefinite (o nessuna) |
 | PUT | `/admin/overrides` | `{ path, mode: series\|movies\|ignore\|null }` e riscansione |

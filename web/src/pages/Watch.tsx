@@ -30,7 +30,23 @@ export default function Watch() {
   const [failed, setFailed] = useState(false);
   const [uiVisible, setUiVisible] = useState(true);
   const [nearEnd, setNearEnd] = useState(false);
-  const video = useRef<HTMLVideoElement>(null);
+  const videoEl = useRef<HTMLVideoElement | null>(null);
+  const playRef = useRef<Play | null>(null);
+  // Quando il <video> esce dalla pagina: salva il punto raggiunto e chiude davvero il flusso di rete
+  // (altrimenti il browser lascia la connessione aperta e le richieste successive possono bloccarsi).
+  const setVideo = useCallback((el: HTMLVideoElement | null) => {
+    const old = videoEl.current;
+    if (!el && old) {
+      try {
+        const p = playRef.current;
+        if (p && old.duration) saveProgress(p.fileId, old.currentTime, old.duration);
+        old.pause();
+        old.removeAttribute('src');
+        old.load();
+      } catch { /* gia' rimosso */ }
+    }
+    videoEl.current = el;
+  }, []);
   const lastSave = useRef(0);
   const hideTimer = useRef<number>();
 
@@ -48,6 +64,7 @@ export default function Watch() {
     api<Play>(`/play/${fileId}`).then(setPlay).catch((e) => setError(e.message));
   }, [fileId]);
 
+  playRef.current = play;
   const streamUrl = play ? absolute(play.streamPath) : '';
 
   // App Android: lettore nativo libVLC (tutti i formati, decodifica sul telefono).
@@ -69,11 +86,11 @@ export default function Watch() {
   // Salvataggio al volo del progresso (web)
   useEffect(() => {
     const onHide = () => {
-      const v = video.current;
+      const v = videoEl.current;
       if (play && v && v.duration) saveProgress(play.fileId, v.currentTime, v.duration);
     };
     window.addEventListener('pagehide', onHide);
-    return () => { onHide(); window.removeEventListener('pagehide', onHide); };
+    return () => window.removeEventListener('pagehide', onHide);
   }, [play]);
 
   useEffect(() => {
@@ -117,7 +134,7 @@ export default function Watch() {
   return (
     <div className="player" onMouseMove={poke} onTouchStart={poke}>
       <video
-        ref={video}
+        ref={setVideo}
         src={streamUrl}
         controls
         autoPlay

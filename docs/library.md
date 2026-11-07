@@ -25,6 +25,15 @@ Le sottocartelle vengono poi analizzate allo stesso modo. Una cartella dentro un
 - Film: titolo e anno dal nome file (`Matrix 1999.mkv` -> *Matrix*, 1999). Si rimuovono qualita'/codec/lingua (`1080p`, `x265`, `ITA`...), tag come `[Mux by ...]`, `byR02`, indici iniziali (`01 - `).
 - Episodi: stagione/numero dal nome; se mancano il numero e' dato dall'ordine alfabetico, la stagione dalla cartella (o 1). Il titolo dell'episodio e' cio' che segue il marcatore.
 
+## Saghe e stagioni personalizzate (`sagas.js`)
+
+Le serie con numerazione continua (Dragon Ball: episodi 1-153, Kai 1-159...) non hanno stagioni nei nomi dei file e finirebbero in un'unica stagione. Le **regole di saga** le dividono: ogni regola e' "dall'episodio N inizia questa saga" e vale fino alla regola successiva.
+
+- Le regole sono salvate per serie nella tabella `saga_rules` (chiave = `S:<cartella>`); le stagioni risultanti in `seasons` (numero + nome) e il numero di stagione di ogni file in `files.season`. Il numero dell'episodio resta quello assoluto.
+- Si applicano ai soli episodi **senza** numerazione stagione esplicita (`1x01`): serie come *How I Met Your Mother* non sono toccate.
+- **Predefinite**: alla prima scansione le serie riconosciute dal nome ricevono le regole (da Wikipedia, in italiano): *Dragon Ball* (9 saghe, ep. 1-153), *Dragon Ball Kai* (7, ep. 1-159), *Dragon Ball Super* (5, ep. 1-131), *Dragon Ball GT* (4, ep. 1-64). *Daima* e *Heroes* restano a stagione unica.
+- **Modifica**: Amministrazione -> *Saghe / stagioni delle serie*: scegli la serie e scrivi una riga per saga (`19 Saga di Freezer`). Campo vuoto = una sola stagione. *Ripristina predefinite* torna ai valori sopra. Le regole modificate sopravvivono alle riscansioni.
+
 ## Righe della home
 
 *Continua a guardare*, *La mia lista*, *Aggiunti di recente*, *Serie TV*, poi una riga per ogni cartella di primo livello con almeno 3 titoli; il resto confluisce in *Altri titoli*.

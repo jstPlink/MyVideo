@@ -4,6 +4,7 @@ import express from 'express';
 import { db, getSetting, setSetting } from './db.js';
 import { requireAuth, requireAdmin, publicUser } from './auth.js';
 import { runScan, scanState } from './scanner.js';
+import { parseRulesText, saveRules, resetRules, sagaList } from './sagas.js';
 import { fetchPendingMetadata, metadataRunning, tmdbKey } from './tmdb.js';
 
 export const adminRouter = express.Router();
@@ -96,5 +97,19 @@ adminRouter.put('/overrides', (req, res) => {
     db.prepare('INSERT INTO overrides(path,mode) VALUES(?,?) ON CONFLICT(path) DO UPDATE SET mode=excluded.mode').run(p, mode);
   } else return res.status(400).json({ error: 'Modo non valido' });
   if (!scanState.running) runScan();
+  res.json({ ok: true });
+});
+
+// Saghe / stagioni personalizzate delle serie con numerazione assoluta
+adminRouter.get('/sagas', (req, res) => res.json({ series: sagaList() }));
+
+adminRouter.put('/sagas/:titleId', (req, res) => {
+  const rules = parseRulesText(req.body?.text);
+  if (!saveRules(Number(req.params.titleId), rules)) return res.status(404).json({ error: 'Serie non trovata' });
+  res.json({ ok: true, rules: rules.length });
+});
+
+adminRouter.delete('/sagas/:titleId', (req, res) => {
+  if (!resetRules(Number(req.params.titleId))) return res.status(404).json({ error: 'Serie non trovata' });
   res.json({ ok: true });
 });

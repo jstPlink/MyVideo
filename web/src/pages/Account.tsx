@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { api, APP_VERSION, getServer, isNative, setServer, setToken } from '../api';
 import { useAuth } from '../auth';
+import ServerInput from '../components/ServerInput';
 
 export default function Account() {
   const { user, signOut } = useAuth();
@@ -40,7 +41,7 @@ export default function Account() {
       {isNative && (
         <div className="panel">
           <h2>Server</h2>
-          <input value={server} onChange={(e) => setServerInput(e.target.value)} />
+          <ServerInput value={server} onChange={setServerInput} />
           <button className="btn secondary" onClick={() => { setServer(server); signOut(); }}>Salva e riaccedi</button>
         </div>
       )}

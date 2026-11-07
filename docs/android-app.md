@@ -4,7 +4,7 @@ L'APK e' la stessa web UI impacchettata con **Capacitor** (`web/android/`, `appI
 
 ## Come funziona
 
-- Al primo avvio chiede l'**indirizzo del server** (es. `https://video.tuodominio.it` o `http://192.168.1.10:8090`), poi mostra il login. Si puo' cambiare da Account o dalla pagina di login.
+- Al primo avvio chiede l'**indirizzo del server**: due pulsanti `https://` / `http://` (la scelta viene ricordata) e un campo dove basta scrivere l'host, es. `myvideo.fplinio.it` (https, tunnel Cloudflare) oppure `192.168.1.10:8090` (http, rete locale). Se incolli un indirizzo completo, lo schema scritto prevale. Poi compare il login. Si puo' cambiare da Account o dalla pagina di login ("cambia server").
 - L'app carica l'interfaccia dai file locali e parla con il server via API con token Bearer (CORS aperto sulle rotte `/api`). L'origine e' `http://localhost` (`androidScheme: 'http'`) cosi' funzionano sia server http (LAN) che https (Cloudflare).
 - Il router usa gli hash (`#/title/3`) perche' le pagine sono file locali.
 - **Riproduzione**: `Watch.tsx` chiama `VlcPlayer.play({ url, title, position })` (`web/src/native.ts`). Il plugin Java `VlcPlayerPlugin` apre `VlcPlayerActivity`, a schermo intero in orizzontale, con play/pausa, -10 s / +30 s, barra di avanzamento, scelta traccia audio e sottotitoli. Alla chiusura restituisce `{ position, duration }` in secondi; la UI salva l'avanzamento e, a fine episodio, passa al successivo.

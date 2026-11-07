@@ -3,6 +3,14 @@
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/), versioni semver.
 Ogni commit incrementa la versione e viene pubblicato su GitHub con il tag `vX.Y.Z`.
 
+## [0.3.0] - 2026-11-07
+### Aggiunto
+- Saghe/stagioni personalizzate per le serie con numerazione continua: regole "dall'episodio N inizia la saga X", editor in Amministrazione e regole predefinite per Dragon Ball (serie originale), Kai, Super e GT. Il dettaglio mostra le saghe nel selettore.
+- App Android: nella schermata di collegamento un selettore rapido `https://` / `http://`; basta scrivere `myvideo.fplinio.it`. La scelta viene ricordata.
+- Pulsante "Riprova" quando home o dettaglio non si caricano; le richieste API scadono dopo 20 secondi invece di restare in attesa all'infinito.
+### Corretto
+- Player web: all'uscita il video viene chiuso davvero (flusso di rete interrotto) e l'avanzamento viene salvato; evita connessioni rimaste aperte che potevano bloccare il caricamento delle pagine dopo il ritorno dal video.
+
 ## [0.2.0] - 2026-11-07
 ### Aggiunto
 - Navigazione a pila con il tasto Indietro di Android: dal dettaglio di un titolo (o dal player) si torna alla schermata precedente (es. Home); dalle altre sezioni (Serie, Film, Lista, Cerca, Account, Admin) si torna alla Home; dalla Home compare "Uscire da MyVideo?" con Annulla/Esci.

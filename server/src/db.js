@@ -79,6 +79,19 @@ CREATE TABLE IF NOT EXISTS mylist (
   PRIMARY KEY (user_id, title_id)
 );
 
+CREATE TABLE IF NOT EXISTS saga_rules (
+  title_key TEXT PRIMARY KEY,
+  rules TEXT NOT NULL,
+  source TEXT NOT NULL DEFAULT 'custom'
+);
+
+CREATE TABLE IF NOT EXISTS seasons (
+  title_id INTEGER NOT NULL REFERENCES titles(id) ON DELETE CASCADE,
+  season INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  PRIMARY KEY (title_id, season)
+);
+
 CREATE TABLE IF NOT EXISTS overrides (
   path TEXT PRIMARY KEY,
   mode TEXT NOT NULL

@@ -3,6 +3,7 @@ import { crawl, seafileConfigured } from './seafile.js';
 import { classify } from './classify.js';
 import { fetchPendingMetadata } from './tmdb.js';
 import { isVideo } from './parser.js';
+import { applyAllSagas } from './sagas.js';
 
 export const scanState = { running: false, startedAt: null, finishedAt: null, files: 0, titles: 0, error: null };
 
@@ -64,6 +65,7 @@ export async function runScan(log = console.log) {
     const videos = files.filter((f) => isVideo(f.path));
     const items = classify(dirs, videos, getOverrides());
     applyScan(items);
+    applyAllSagas();
     scanState.titles = items.length;
     scanState.files = videos.length;
     log(`Scansione: ${videos.length} video, ${items.length} titoli`);

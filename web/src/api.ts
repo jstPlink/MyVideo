@@ -38,9 +38,10 @@ export async function api<T = any>(path: string, opts: { method?: string; body?:
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: opts.body ? JSON.stringify(opts.body) : undefined,
+      signal: AbortSignal.timeout(20000),
     });
   } catch {
-    throw new ApiError('Server non raggiungibile', 0);
+    throw new ApiError('Il server non risponde', 0);
   }
   let data: any = null;
   try { data = await res.json(); } catch { /* corpo vuoto */ }
@@ -69,5 +70,5 @@ export interface FileInfo {
 }
 export interface TitleDetail extends Omit<Card, 'resume'> {
   runtime: number | null; inList: boolean; resume: { fileId: number; position: number } | null;
-  files: FileInfo[]; related: Card[];
+  files: FileInfo[]; related: Card[]; seasons: { season: number; name: string }[];
 }

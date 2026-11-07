@@ -154,6 +154,7 @@ apiRouter.get('/titles/:id', requireAuth, (req, res) => {
       title: f.ep_title, overview: f.ep_overview, still: f.ep_still,
       position: f.position || 0, duration: f.duration || 0, completed: !!f.completed,
     })),
+    seasons: db.prepare('SELECT season, name FROM seasons WHERE title_id = ? ORDER BY season').all(t.id),
     related: related.map((r) => card(r)),
   });
 });

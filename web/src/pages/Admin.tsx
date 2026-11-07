@@ -11,6 +11,57 @@ interface Lib {
   folders: { folder: string; kind: string; titles: number }[];
 }
 
+interface Saga { id: number; name: string; episodes: number; maxEpisode: number | null; text: string; source: string | null; presetAvailable: boolean }
+
+function SagaEditor() {
+  const [list, setList] = useState<Saga[]>([]);
+  const [id, setId] = useState<number | null>(null);
+  const [text, setText] = useState('');
+  const [msg, setMsg] = useState('');
+
+  const load = useCallback((keep?: number | null) => {
+    api<{ series: Saga[] }>('/admin/sagas').then((r) => {
+      setList(r.series);
+      const cur = r.series.find((s) => s.id === (keep ?? id)) || r.series[0];
+      if (cur) { setId(cur.id); setText(cur.text); }
+    });
+  }, [id]);
+  useEffect(() => { load(null); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const cur = list.find((s) => s.id === id);
+  const pick = (v: number) => { setId(v); setText(list.find((s) => s.id === v)?.text || ''); setMsg(''); };
+  const save = async () => {
+    await api(`/admin/sagas/${id}`, { method: 'PUT', body: { text } });
+    setMsg('Salvato.');
+    load(id);
+  };
+  const reset = async () => {
+    await api(`/admin/sagas/${id}`, { method: 'DELETE' });
+    setMsg('Ripristinato.');
+    load(id);
+  };
+
+  if (!list.length) return <p className="muted">Nessuna serie in libreria.</p>;
+  return (
+    <>
+      <select value={id ?? ''} onChange={(e) => pick(Number(e.target.value))}>
+        {list.map((s) => <option key={s.id} value={s.id}>{s.name} ({s.episodes} ep.)</option>)}
+      </select>
+      <textarea rows={9} value={text} onChange={(e) => setText(e.target.value)} placeholder={['1 Saga dei Saiyan', '19 Saga di Freezer', '55 Saga degli Androidi'].join(String.fromCharCode(10))} spellCheck={false} />
+      <p className="muted small">
+        Una riga per saga: <b>numero del primo episodio</b> e nome. Ogni saga dura fino alla successiva
+        {cur?.maxEpisode ? ` (questa serie arriva all'episodio ${cur.maxEpisode})` : ''}. Campo vuoto = una sola stagione.
+        {cur?.source === 'preset' && ' Regole predefinite in uso.'}
+      </p>
+      <div className="row-actions">
+        <button className="btn primary" onClick={save}>Salva</button>
+        {cur?.presetAvailable && <button className="btn" onClick={reset}>Ripristina predefinite</button>}
+        {msg && <span className="muted">{msg}</span>}
+      </div>
+    </>
+  );
+}
+
 const statusLabel: Record<string, string> = { active: 'Attivo', pending: 'In attesa', disabled: 'Disabilitato' };
 
 export default function Admin() {
@@ -109,6 +160,12 @@ export default function Admin() {
           <input type="password" placeholder="API key o Read Access Token" value={tmdb} onChange={(e) => setTmdb(e.target.value)} />
           <button className="btn primary" disabled={!tmdb} onClick={saveTmdb}>Salva</button>
         </div>
+      </section>
+
+      <section className="panel">
+        <h2>Saghe / stagioni delle serie</h2>
+        <p className="muted">Per le serie con numerazione continua (es. Dragon Ball, episodi 1-159) puoi dividere gli episodi in saghe o stagioni. Per Dragon Ball, Kai, Super e GT sono gia' impostate.</p>
+        <SagaEditor />
       </section>
 
       <section className="panel">

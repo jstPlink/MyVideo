@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api, APP_VERSION, getServer, isNative, setServer } from '../api';
 import { useAuth, type User } from '../auth';
+import ServerInput from '../components/ServerInput';
 
 interface Status { version: string; needsSetup: boolean; registration: 'approval' | 'open' | 'closed' }
 
@@ -26,8 +27,8 @@ export default function Login() {
 
   const saveServer = (e: React.FormEvent) => {
     e.preventDefault();
-    let url = server.trim();
-    if (!/^https?:\/\//i.test(url)) url = 'http://' + url;
+    const url = server.trim();
+    if (!url) return;
     setServer(url);
     setServerInput(url);
     setNeedServer(false);
@@ -59,8 +60,8 @@ export default function Login() {
         <form className="auth-box" onSubmit={saveServer}>
           <div className="logo big">MYVIDEO</div>
           <h1>Collega il server</h1>
-          <p className="muted">Inserisci l'indirizzo della tua istanza MyVideo (es. https://video.tuodominio.it oppure http://192.168.1.10:8090).</p>
-          <input type="text" inputMode="url" autoCapitalize="none" placeholder="Indirizzo del server" value={server} onChange={(e) => setServerInput(e.target.value)} required />
+          <p className="muted">Inserisci l'indirizzo della tua istanza MyVideo Scegli http o https e scrivi solo l'indirizzo (es. myvideo.fplinio.it oppure 192.168.1.10:8090 con http).</p>
+          <ServerInput value={server} onChange={setServerInput} />
           <button className="btn primary full" type="submit">Continua</button>
         </form>
       </div>

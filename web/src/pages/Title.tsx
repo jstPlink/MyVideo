@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, backdrop, poster, type TitleDetail } from '../api';
 import Row from '../components/Row';
+import ErrorBox from '../components/ErrorBox';
 
 function fmtSize(b: number) {
   return b > 1e9 ? (b / 1e9).toFixed(1) + ' GB' : Math.round(b / 1e6) + ' MB';
@@ -28,10 +29,11 @@ export default function TitlePage() {
 
   const seasons = useMemo(() => [...new Set((t?.files || []).map((f) => f.season ?? 1))].sort((a, b) => a - b), [t]);
 
-  if (error) return <div className="page-msg">{error}</div>;
+  if (error) return <ErrorBox message={error} />;
   if (!t) return <div className="page-msg">Caricamento…</div>;
 
   const bg = backdrop(t.backdrop) || poster(t.poster, 'w780');
+  const seasonName = (n: number) => t.seasons.find((x) => x.season === n)?.name || `Stagione ${n}`;
   const eps = t.files.filter((f) => (f.season ?? 1) === (season ?? 1));
   const resumeFile = t.files.find((f) => f.id === t.resume?.fileId);
   const resumeLabel = t.resume && t.resume.position > 15 ? 'Riprendi' : 'Riproduci';
@@ -50,7 +52,7 @@ export default function TitlePage() {
           <div className="meta">
             {t.rating ? <span className="match">★ {t.rating.toFixed(1)}</span> : null}
             {t.year && <span>{t.year}</span>}
-            {t.kind === 'series' && <span>{seasons.length} {seasons.length === 1 ? 'stagione' : 'stagioni'}</span>}
+            {t.kind === 'series' && <span>{seasons.length} {t.seasons.length ? (seasons.length === 1 ? 'saga' : 'saghe') : seasons.length === 1 ? 'stagione' : 'stagioni'}</span>}
             {t.runtime ? <span>{t.runtime} min</span> : null}
             {t.genres && <span>{t.genres}</span>}
           </div>
@@ -69,10 +71,10 @@ export default function TitlePage() {
       {t.kind === 'series' && (
         <section className="episodes">
           <div className="ep-head">
-            <h2>Episodi</h2>
+            <h2>{t.seasons.length ? seasonName(season ?? 1) : 'Episodi'}</h2>
             {seasons.length > 1 && (
               <select value={season ?? 1} onChange={(e) => setSeason(Number(e.target.value))}>
-                {seasons.map((s) => <option key={s} value={s}>Stagione {s}</option>)}
+                {seasons.map((s) => <option key={s} value={s}>{seasonName(s)}</option>)}
               </select>
             )}
           </div>
