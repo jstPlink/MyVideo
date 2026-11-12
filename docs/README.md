@@ -7,6 +7,8 @@ Versione descritta: vedi `VERSION` / [CHANGELOG](../CHANGELOG.md). Questa docume
 | [architecture.md](architecture.md) | Componenti, flusso dei dati, database, sicurezza |
 | [library.md](library.md) | Come la libreria Seafile diventa film e serie, metadati TMDB, forzature |
 | [deployment.md](deployment.md) | Docker sul NAS, variabili d'ambiente, Cloudflare Tunnel, aggiornamenti, backup |
+| [player.md](player.md) | Lettore web e desktop in stile Netflix: controlli e scorciatoie |
+| [downloads.md](downloads.md) | Pagina per scaricare APK e installer dal sito |
 | [android-app.md](android-app.md) | App Android: Capacitor, lettore libVLC, build e firma dell'APK |
 | [desktop-app.md](desktop-app.md) | App desktop Electron: installazione, uso, VLC, build |
 | [statistics.md](statistics.md) | Statistiche di visione: cosa si vede, come si registra, esportazione |

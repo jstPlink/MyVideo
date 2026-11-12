@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth';
+import { isNative } from '../api';
 
 export default function Navbar() {
   const { user, signOut } = useAuth();
@@ -54,6 +55,7 @@ export default function Navbar() {
               <div className="menu" onMouseLeave={() => setMenuOpen(false)}>
                 <div className="menu-email">{user?.email}</div>
                 <Link to="/account">Account e password</Link>
+                {!isNative && <Link to="/download">Scarica le app</Link>}
                 {user?.role === 'admin' && <Link to="/admin">Amministrazione</Link>}
                 <button onClick={signOut}>Esci</button>
               </div>

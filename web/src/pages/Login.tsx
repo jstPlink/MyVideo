@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api, APP_VERSION, getServer, isNative, setServer } from '../api';
 import { useAuth, type User } from '../auth';
 import ServerInput from '../components/ServerInput';
+import { Link } from 'react-router-dom';
 
 interface Status { version: string; needsSetup: boolean; registration: 'approval' | 'open' | 'closed' }
 
@@ -98,6 +99,7 @@ export default function Login() {
         {status && status.registration === 'approval' && mode === 'register' && !setup && (
           <p className="muted small">Dopo la registrazione un amministratore dovra' approvare il tuo account.</p>
         )}
+        {!isNative && <p className="muted small foot"><Link to="/download">Scarica l'app per Android e computer</Link></p>}
         <p className="muted small foot">
           v{APP_VERSION}
           {isNative && <> · {getServer()} · <a href="#" onClick={(e) => { e.preventDefault(); setNeedServer(true); }}>cambia server</a></>}

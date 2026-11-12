@@ -7,6 +7,7 @@ import { authRouter, userCount } from './auth.js';
 import { apiRouter } from './api.js';
 import { adminRouter } from './admin.js';
 import { watchRouter, statsRouter } from './watch.js';
+import { downloadsRouter } from './downloads.js';
 import { runScan } from './scanner.js';
 import { seafileConfigured } from './seafile.js';
 import { fetchPendingMetadata } from './tmdb.js';
@@ -37,6 +38,7 @@ app.get('/api/status', (req, res) => {
 });
 
 app.use('/api/auth', authRouter);
+app.use('/api/downloads', downloadsRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/watch', watchRouter);
 app.use('/api/stats', statsRouter);

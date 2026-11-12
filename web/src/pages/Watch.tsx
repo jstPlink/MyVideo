@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { absolute, api, getServer, getToken, isNative } from '../api';
 import { VlcPlayer } from '../native';
 import { WatchTracker, newSessionId, sendWatch } from '../watch';
+import PlayerControls, { type Episode } from '../components/PlayerControls';
 
 interface Desktop { isDesktop: boolean; openInVlc: (url: string) => Promise<{ ok: boolean; error?: string }> }
 const desktop: Desktop | undefined = (window as unknown as { myvideoDesktop?: Desktop }).myvideoDesktop;
@@ -10,6 +11,7 @@ const desktop: Desktop | undefined = (window as unknown as { myvideoDesktop?: De
 interface Play {
   fileId: number; titleId: number; ext: string; name: string; kind: string; title: string;
   streamPath: string; position: number; nextFileId: number | null; prevFileId: number | null;
+  seriesTitle: string | null; episodes: Episode[];
 }
 
 // Formati che nessun browser riproduce: si passa direttamente a VLC.
@@ -33,8 +35,6 @@ export default function Watch() {
   const [error, setError] = useState('');
   const [failed, setFailed] = useState(false);
   const [vlcMsg, setVlcMsg] = useState('');
-  const [uiVisible, setUiVisible] = useState(true);
-  const [nearEnd, setNearEnd] = useState(false);
   const videoEl = useRef<HTMLVideoElement | null>(null);
   const trackerRef = useRef<WatchTracker | null>(null);
   const playRef = useRef<Play | null>(null);
@@ -54,7 +54,7 @@ export default function Watch() {
     videoEl.current = el;
   }, []);
   const lastSave = useRef(0);
-  const hideTimer = useRef<number>();
+  const playerRef = useRef<HTMLDivElement>(null);
 
   // Pila di navigazione: si torna alla schermata da cui si e' partiti; se la pagina e' stata aperta
   // direttamente (nessuna cronologia) si ripiega sul dettaglio del titolo.
@@ -66,7 +66,7 @@ export default function Watch() {
   backRef.current = back;
 
   useEffect(() => {
-    setPlay(null); setError(''); setFailed(false); setNearEnd(false);
+    setPlay(null); setError(''); setFailed(false);
     api<Play>(`/play/${fileId}`).then(setPlay).catch((e) => setError(e.message));
   }, [fileId]);
 
@@ -74,10 +74,21 @@ export default function Watch() {
   const streamUrl = play ? absolute(play.streamPath) : '';
 
   // App Android: lettore nativo libVLC (tutti i formati, decodifica sul telefono).
+  // IMPORTANTE: l'effetto dipende solo da `play`. Se dipendesse da `nav` (che cambia a ogni navigazione)
+  // il lettore verrebbe riaperto per l'episodio precedente a ogni passaggio, impilando piu' player.
+  const navRef = useRef(nav);
+  navRef.current = nav;
+  const launched = useRef<number | null>(null);
   useEffect(() => {
     if (!play || !isNative) return;
-    let cancelled = false;
-    VlcPlayer.play({ url: streamUrl, title: play.title, position: play.position, hasNext: !!play.nextFileId, hasPrev: !!play.prevFileId })
+    if (launched.current === play.fileId) return;
+    launched.current = play.fileId;
+    const episodesJson = JSON.stringify((play.episodes || []).map((e) => ({ id: e.id, season: e.season, episode: e.episode, title: e.title, seasonName: e.seasonName })));
+    VlcPlayer.play({
+      url: streamUrl, title: play.title, position: play.position,
+      hasNext: !!play.nextFileId, hasPrev: !!play.prevFileId,
+      currentId: play.fileId, seriesTitle: play.seriesTitle || '', episodes: episodesJson,
+    })
       .then((r) => {
         // statistiche: tempo realmente guardato nel lettore nativo
         if (r.watched && r.watched >= 3) {
@@ -86,16 +97,16 @@ export default function Watch() {
             startedAt: r.startedAt || Date.now() - r.watched * 1000, endedAt: r.endedAt || Date.now(), seconds: r.watched,
           });
         }
-        if (cancelled) return;
         if (r.duration > 0) saveProgress(play.fileId, r.position, r.duration);
         const done = r.duration > 0 && (r.position / r.duration > 0.92 || r.duration - r.position < 90);
-        if (r.prev && play.prevFileId) nav(`/watch/${play.prevFileId}`, { replace: true });
-        else if ((done || r.next) && play.nextFileId) nav(`/watch/${play.nextFileId}`, { replace: true });
+        const go = (id: number) => navRef.current(`/watch/${id}`, { replace: true });
+        if (r.goto) go(r.goto);
+        else if (r.prev && play.prevFileId) go(play.prevFileId);
+        else if ((done || r.next) && play.nextFileId) go(play.nextFileId);
         else backRef.current();
       })
-      .catch((e) => !cancelled && setError(e?.message || 'Impossibile avviare il lettore'));
-    return () => { cancelled = true; };
-  }, [play, streamUrl, nav]);
+      .catch((e) => setError(e?.message || 'Impossibile avviare il lettore'));
+  }, [play, streamUrl]);
 
   // Salvataggio al volo del progresso (web)
   useEffect(() => {
@@ -127,17 +138,10 @@ export default function Watch() {
   }, [play]);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') back(); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !document.fullscreenElement) back(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [back]);
-
-  const poke = () => {
-    setUiVisible(true);
-    window.clearTimeout(hideTimer.current);
-    hideTimer.current = window.setTimeout(() => setUiVisible(false), 3000);
-  };
-  useEffect(() => { poke(); return () => window.clearTimeout(hideTimer.current); }, []);
 
   if (error) return <div className="player-msg"><p>{error}</p><button className="btn secondary" onClick={() => nav(-1)}>Indietro</button></div>;
   if (!play) return <div className="player-msg"><p>Caricamento…</p></div>;
@@ -169,19 +173,19 @@ export default function Watch() {
     );
   }
 
+  const gotoFile = (id: number) => nav(`/watch/${id}`, { replace: true });
+
   return (
-    <div className="player" onMouseMove={poke} onTouchStart={poke}>
+    <div className="player" ref={playerRef}>
       <video
         ref={setVideo}
         src={streamUrl}
-        controls
         autoPlay
         playsInline
         onLoadedMetadata={(e) => { if (play.position > 5) e.currentTarget.currentTime = play.position; }}
         onError={() => setFailed(true)}
         onTimeUpdate={(e) => {
           const v = e.currentTarget;
-          if (v.duration && v.duration - v.currentTime < 25) setNearEnd(true); else setNearEnd(false);
           if (Date.now() - lastSave.current > 10000 && v.duration) {
             lastSave.current = Date.now();
             saveProgress(play.fileId, v.currentTime, v.duration);
@@ -191,17 +195,22 @@ export default function Watch() {
         onEnded={(e) => {
           const v = e.currentTarget;
           saveProgress(play.fileId, v.duration, v.duration);
-          if (play.nextFileId) nav(`/watch/${play.nextFileId}`, { replace: true });
+          if (play.nextFileId) gotoFile(play.nextFileId);
           else back();
         }}
       />
-      <div className={'player-top' + (uiVisible ? '' : ' hidden')}>
-        <button className="icon-btn" onClick={back} aria-label="Indietro">←</button>
-        <span>{play.title}</span>
-      </div>
-      {nearEnd && play.nextFileId && (
-        <button className="btn secondary next-ep" onClick={() => nav(`/watch/${play.nextFileId}`, { replace: true })}>Prossimo episodio ▶</button>
-      )}
+      <PlayerControls
+        videoRef={videoEl}
+        containerRef={playerRef}
+        title={play.title}
+        seriesTitle={play.seriesTitle}
+        currentId={play.fileId}
+        episodes={play.episodes || []}
+        hasNext={!!play.nextFileId}
+        onBack={back}
+        onNext={() => play.nextFileId && gotoFile(play.nextFileId)}
+        onGoto={gotoFile}
+      />
     </div>
   );
 }

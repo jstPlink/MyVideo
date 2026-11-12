@@ -8,7 +8,7 @@ Web app + app Android (APK), il tutto in un singolo container Docker.
 - "Continua a guardare", "La mia lista", episodi con avanzamento.
 - Pagina **Statistiche**: tempo guardato per giorno e ora, titoli più guardati, cronologia, esportazione CSV/JSON.
 - Il NAS fa solo da proxy (HTTP Range): nessuna transcodifica, CPU quasi a riposo.
-- App desktop (Windows, macOS, Linux) e app Android dalle [release](https://github.com/jstPlink/MyVideo/releases).
+- App desktop (Windows, macOS, Linux) e app Android: si scaricano dalla pagina `/download` del sito o dalle [release](https://github.com/jstPlink/MyVideo/releases).
 - L'APK usa libVLC: legge qualsiasi formato (mkv, avi, rmvb, HEVC, AC3...). Sul web servono formati supportati dal browser.
 
 ## Avvio rapido (NAS / Docker)

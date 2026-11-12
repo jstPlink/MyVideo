@@ -10,6 +10,12 @@ Base: `/api`. Formato JSON. Autenticazione: header `Authorization: Bearer <token
 | POST | `/auth/register` | `{ email, password }`. Primo utente = admin (risponde con token). Poi: `active` (open), `pending` (202, `{pending:true}`) o 403 (closed) |
 | POST | `/auth/login` | `{ email, password }` -> `{ token, user }`. 403 se in attesa/disabilitato, 429 dopo troppi tentativi |
 
+## Download delle app (pubblico)
+
+| Metodo | Percorso | Descrizione |
+|---|---|---|
+| GET | `/downloads` | `{ latest, releasesUrl, assets: [{ kind, arch, name, size, url, version, publishedAt }] }` dalle release GitHub (cache 10 min). Vedi [downloads.md](downloads.md) |
+
 ## Utente autenticato
 
 | Metodo | Percorso | Descrizione |
@@ -21,7 +27,7 @@ Base: `/api`. Formato JSON. Autenticazione: header `Authorization: Bearer <token
 | GET | `/titles/:id` | Dettaglio, file/episodi con avanzamento, `resume`, `seasons` (nomi delle saghe, se definiti), titoli correlati |
 | GET | `/mylist` | La mia lista |
 | POST | `/mylist/:titleId` | Aggiunge/rimuove -> `{ inList }` |
-| GET | `/play/:fileId` | `{ streamPath, title, position, nextFileId, prevFileId, ext, ... }` con token di streaming di 12 h |
+| GET | `/play/:fileId` | `{ streamPath, title, position, nextFileId, prevFileId, seriesTitle, episodes[], ext, ... }` con token di streaming di 12 h |
 | GET | `/stream/:fileId?t=<token>` | Video con supporto `Range` (anche con Bearer) |
 | POST | `/progress` | `{ fileId, position, duration }` (secondi); completato oltre il 92% |
 | DELETE | `/progress/title/:titleId` | Azzera l'avanzamento di un titolo |

@@ -10,13 +10,14 @@ import Watch from './pages/Watch';
 import Account from './pages/Account';
 import Admin from './pages/Admin';
 import Stats from './pages/Stats';
+import Download from './pages/Download';
 
 export default function App() {
   const { user, ready } = useAuth();
   const loc = useLocation();
 
   if (!ready) return <div className="splash"><div className="logo">MYVIDEO</div></div>;
-  if (!user) return <Login />;
+  if (!user) return loc.pathname === '/download' ? <Download /> : <Login />;
 
   const watching = loc.pathname.startsWith('/watch');
   return (
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="/title/:id" element={<TitlePage />} />
         <Route path="/watch/:fileId" element={<Watch />} />
         <Route path="/stats" element={<Stats />} />
+        <Route path="/download" element={<Download />} />
         <Route path="/account" element={<Account />} />
         <Route path="/admin" element={user.role === 'admin' ? <Admin /> : <Navigate to="/" />} />
         <Route path="*" element={<Navigate to="/" />} />

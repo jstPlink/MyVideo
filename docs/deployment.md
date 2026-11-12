@@ -36,6 +36,10 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
+## Scaricare le app dal sito
+
+Una volta online, `https://<tuo-dominio>/download` offre l'APK e gli installer desktop (anche senza login): vedi [downloads.md](downloads.md). Il NAS deve poter raggiungere `api.github.com` per leggere l'elenco delle release; i file si scaricano direttamente da GitHub.
+
 ## Primo avvio
 
 1. Apri `http://IP-NAS:8090`: compare *Configurazione iniziale*. L'account creato e' l'**amministratore**.

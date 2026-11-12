@@ -25,6 +25,13 @@ function neighborFile(fileId, delta) {
 
 const nextFile = (fileId) => neighborFile(fileId, 1);
 
+/** Episodi di una serie con nome della stagione/saga (se definito). */
+function episodeList(titleId) {
+  const names = new Map(db.prepare('SELECT season, name FROM seasons WHERE title_id = ?').all(titleId).map((r) => [r.season, r.name]));
+  return db.prepare('SELECT id, season, episode, ep_title FROM files WHERE title_id = ? ORDER BY season, episode, name LIMIT 600').all(titleId)
+    .map((e) => ({ id: e.id, season: e.season ?? 1, episode: e.episode, title: e.ep_title || null, seasonName: names.get(e.season ?? 1) || `Stagione ${e.season ?? 1}` }));
+}
+
 function epLabel(f) {
   return f.season != null && f.episode != null ? `S${f.season}:E${f.episode}` : '';
 }
@@ -190,6 +197,9 @@ apiRouter.get('/play/:fileId', requireAuth, (req, res) => {
     position: p && !p.completed ? p.position : 0,
     nextFileId: nf,
     prevFileId: neighborFile(fileId, -1),
+    // elenco episodi (solo serie) per il pannello "Episodi" dei lettori
+    seriesTitle: f.kind === 'series' ? f.title_name : null,
+    episodes: f.kind === 'series' ? episodeList(f.tid) : [],
   });
 });
 

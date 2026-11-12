@@ -3,6 +3,16 @@
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/), versioni semver.
 Ogni commit incrementa la versione e viene pubblicato su GitHub con il tag `vX.Y.Z`.
 
+## [0.8.0] - 2026-11-12
+### Aggiunto
+- **Pagina Download** (`/download`, anche senza login; link nel menu del profilo e nella schermata di login): scarica l'APK Android e gli installer per Windows, macOS e Linux direttamente dal sito, con il sistema in uso evidenziato, le istruzioni di installazione e l'indirizzo del server da copiare. L'elenco viene dalle release GitHub (`GET /api/downloads`, in cache 10 minuti).
+- **Lettore web e app desktop in stile Netflix**: controlli personalizzati con barra rossa e anteprima del tempo, indietro/avanti di 10 s, volume con cursore, titolo, prossimo episodio, pannello **Episodi** con selezione della stagione/saga, velocità (0.5x-2x), schermo intero, doppio clic per lo schermo intero e scorciatoie da tastiera (spazio/K, J/L e frecce, su/giù volume, M, F, 0-9, Maiusc+N).
+- **Lettore Android in stile Netflix** con i colori dell'app (nero e rosso): al centro -10 / play-pausa / +10, in basso barra rossa con tempo rimanente e riga Blocca, Velocità, Episodi, Audio e sottotitoli, Prossimo episodio; pannello Episodi con stagioni/saghe e pannello Audio e sottotitoli a due colonne.
+- Il pulsante **Prossimo episodio** compare quando manca il **5%** della durata (circa 1 minuto e 15 secondi su un episodio da 25 minuti), sul web, sul desktop e su Android.
+- `GET /api/play/:fileId` restituisce anche `seriesTitle` ed `episodes` (con il nome della saga di ciascuno).
+### Corretto
+- App Android: guardando più episodi di fila si aprivano più lettori uno sopra l'altro e il tasto indietro andava premuto più volte. L'effetto che avvia VLC dipendeva dalla funzione di navigazione, che cambia a ogni passaggio, e riapriva anche l'episodio precedente; ora il lettore parte una sola volta per episodio. (Era probabilmente anche la causa del lettore "bloccato" a fine episodio.)
+
 ## [0.7.0] - 2026-11-07
 ### Aggiunto
 - **Statistiche di visione**: pulsante "Statistiche" accanto al profilo e pagina dedicata con tempo guardato per giorno (o settimana), per ora del giorno, mappa di calore giorno-della-settimana x ora, titoli più guardati, tempo per singolo video con dettaglio giorno per giorno e cronologia delle sessioni con data e ora. Periodi: 7 / 30 / 90 giorni, anno, sempre.

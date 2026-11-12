@@ -4,7 +4,7 @@ L'app desktop è una finestra **Electron** (`desktop/`) che mostra l'interfaccia
 
 ## Installazione
 
-Scarica dall'ultima [release](https://github.com/jstPlink/MyVideo/releases) il file per il tuo sistema:
+Scarica il file per il tuo sistema dalla pagina **/download** del tuo sito MyVideo (si apre anche senza login) oppure dall'ultima [release](https://github.com/jstPlink/MyVideo/releases) su GitHub:
 
 | Sistema | File | Note |
 |---|---|---|

@@ -11,25 +11,38 @@ L'APK e' la stessa web UI impacchettata con **Capacitor** (`web/android/`, `appI
 - libVLC decodifica sul telefono (HW se possibile): nessun carico sul NAS. Legge mkv, avi, rmvb, HEVC, AC3/DTS ecc.
 - Gli ABI inclusi sono `arm64-v8a` e `armeabi-v7a` (APK piu' leggero; niente x86).
 
-## Controlli del player (`VlcPlayerActivity`)
+## Il lettore (`VlcPlayerActivity`)
 
-L'interfaccia è costruita in codice (nessun layout XML) ispirandosi a VLC per Android; le icone sono vettori in `res/drawable/ic_pl_*.xml`; colore d'accento arancione VLC (`#FF8800`).
+Interfaccia costruita in codice (nessun layout XML) con i comandi di Netflix e i colori dell'app: sfondo nero, accento rosso `#E50914`; icone vettoriali in `res/drawable/ic_pl_*.xml`.
 
-**Barra superiore**: indietro, titolo, traccia audio, sottotitoli, velocità (testo `1x`: apre l'elenco 0.5x, 0.75x, 1x, 1.25x, 1.5x, 2x).
-**Barra inferiore**: tempo trascorso, seekbar, durata (un tocco alterna durata e tempo rimanente); sotto, da sinistra: **lucchetto** (blocca tutti i comandi e i gesti: resta solo il pulsante di sblocco), precedente, -10 s, play/pausa, +30 s, successivo, **formato schermo** (cicla Adatta, Schermo intero, Riempi, 16:9, 4:3, Originale).
-I comandi si nascondono dopo 4 s in riproduzione e restano visibili in pausa. Precedente/successivo sono attenuati se non esiste l'episodio.
+| Zona | Contenuto |
+|---|---|
+| In alto | freccia indietro, titolo della serie e, sotto, episodio (`S2:E21 - titolo`), formato schermo (cicla Adatta, Schermo intero, Riempi, 16:9, 4:3, Originale) |
+| Al centro | -10 s, play/pausa grande, +10 s |
+| In basso | tempo trascorso, **barra rossa**, tempo rimanente (un tocco alterna rimanente e durata); sotto, una riga di pulsanti con icona e testo: **Blocca**, **Velocità** (0.5x-2x), **Episodi** (solo serie), **Audio e sottotitoli**, **Prossimo ep.** (se esiste) |
+| Pulsante flottante | "Prossimo episodio": compare quando manca il **5%** della durata (`NEXT_BUTTON_FRACTION`) |
+
+I comandi si nascondono dopo 4 s in riproduzione e restano visibili in pausa.
+
+- **Episodi**: finestra con l'elenco degli episodi (selettore di stagione/saga se ce n'è più di una), quello in corso è evidenziato; toccando un episodio il lettore si chiude e la web UI apre quello scelto.
+- **Audio e sottotitoli**: una finestra a due colonne (tracce audio e sottotitoli, con "Disattivato") che applica la scelta subito.
+- **Blocca**: nasconde i comandi e disattiva i gesti; resta solo il lucchetto per sbloccare, e il tasto indietro non esce finché è bloccato.
 
 | Gesto | Effetto |
 |---|---|
 | Tocco | Pausa / riprendi |
-| Doppio tocco a sinistra / destra | -10 s / +30 s (messaggio al centro) |
-| Scorrimento verticale a sinistra | Luminosità dello schermo (indicatore con percentuale; ripristinata all'uscita) |
-| Scorrimento verticale a destra | Volume di sistema (indicatore con percentuale) |
-| Scorrimento orizzontale | Cerca nel video (tutta la larghezza = 90 s), con tempo di destinazione; si applica al rilascio |
+| Doppio tocco a sinistra / destra | -10 s / +30 s (messaggio in alto) |
+| Scorrimento verticale a sinistra | Luminosità (indicatore; ripristinata all'uscita) |
+| Scorrimento verticale a destra | Volume di sistema (indicatore) |
+| Scorrimento orizzontale | Cerca nel video (tutta la larghezza = 90 s), si applica al rilascio |
 
-Per le [statistiche](statistics.md) il lettore somma i secondi in cui il video è realmente in riproduzione (`watchTick`, solo in primo piano) e li restituisce con `startedAt`/`endedAt`; la web UI li invia a `POST /api/watch` alla chiusura. Il plugin riceve `hasNext` e `hasPrev` da `Watch.tsx` e restituisce `{ position, duration, next, prev }`: con *Successivo* / *Precedente* il lettore si chiude e la web UI apre l'altro episodio (`/api/play/:id` restituisce `nextFileId` e `prevFileId`). I gesti sono gestiti da uno strato trasparente (`GestureDetector`) sopra il video.
+### Scambio con la web UI
+`Watch.tsx` chiama `VlcPlayer.play({ url, title, position, hasNext, currentId, seriesTitle, episodes })` (`episodes` = JSON con `id, season, episode, title, seasonName`). Alla chiusura il plugin restituisce `{ position, duration, next, goto, watched, startedAt, endedAt }`: la UI salva l'avanzamento, invia i secondi guardati a `POST /api/watch` ([statistiche](statistics.md)) e apre `goto` (episodio scelto dal pannello), il successivo (`next` o fine episodio) oppure torna indietro.
 
-Alla fine di un episodio si passa automaticamente al successivo. La fine viene rilevata in tre modi (`VlcPlayerActivity`): evento libVLC `EndReached`; evento `Stopped` entro 3 s dalla fine; controllo di sicurezza ogni secondo (`endWatch`) che chiude il lettore se lo stato è Ended/Stopped/Error vicino alla fine oppure se, negli ultimi 45 s di video, il tempo non avanza da 4 s (in pausa non scatta). Serve perché libVLC non sempre invia `EndReached` (durata dichiarata errata, flusso HTTP che si chiude) e il lettore restava fermo sull'ultimo fotogramma. I gesti sono gestiti da uno strato trasparente (`GestureDetector`) sopra il video: tocco singolo confermato = pausa, doppio tocco = salto in base a metà schermo sinistra/destra. Il plugin riceve `hasNext` da `Watch.tsx` e restituisce `{ position, duration, next }`.
+**Un solo avvio per episodio** — l'effetto che chiama `VlcPlayer.play` in `Watch.tsx` deve dipendere solo da `play` (e usa `navRef` per navigare). Se dipendesse da `nav`, che cambia a ogni navigazione, il lettore verrebbe riaperto per l'episodio precedente a ogni passaggio, impilando più player (bug corretto in 0.8.0). Un `launched` ref impedisce comunque il doppio avvio per lo stesso file.
+
+### Fine episodio
+La fine viene rilevata in tre modi: evento libVLC `EndReached`; evento `Stopped` entro 3 s dalla fine; controllo di sicurezza ogni secondo (`endWatch`) che chiude il lettore se lo stato è Ended/Stopped/Error vicino alla fine oppure se, negli ultimi 45 s di video, il tempo non avanza da 4 s (in pausa non scatta). Serve perché libVLC non sempre invia `EndReached`. Il lettore somma anche i secondi realmente guardati (`watchTick`, solo in primo piano) per le statistiche.
 
 ## Tasto Indietro (navigazione a pila)
 
