@@ -20,7 +20,7 @@ Interfaccia costruita in codice (nessun layout XML) con i comandi di Netflix e i
 | In alto | freccia indietro, titolo della serie e, sotto, episodio (`S2:E21 - titolo`), formato schermo (cicla Adatta, Schermo intero, Riempi, 16:9, 4:3, Originale) |
 | Al centro | -10 s, play/pausa grande, +10 s |
 | In basso | tempo trascorso, **barra rossa**, tempo rimanente (un tocco alterna rimanente e durata); sotto, una riga di pulsanti con icona e testo: **Blocca**, **Velocità** (0.5x-2x), **Episodi** (solo serie), **Audio e sottotitoli**, **Prossimo ep.** (se esiste) |
-| Pulsante flottante | "Prossimo episodio": compare quando manca il **5%** della durata (`NEXT_BUTTON_FRACTION`) |
+| Pulsante flottante | "Prossimo episodio": compare quando manca l'**8%** della durata (`NEXT_BUTTON_FRACTION`) |
 
 I comandi si nascondono dopo 4 s in riproduzione e restano visibili in pausa.
 
@@ -30,7 +30,7 @@ I comandi si nascondono dopo 4 s in riproduzione e restano visibili in pausa.
 
 | Gesto | Effetto |
 |---|---|
-| Tocco | Pausa / riprendi |
+| Tocco | Mostra / nascondi i comandi (la pausa si fa col pulsante play/pausa, come l'app Netflix) |
 | Doppio tocco a sinistra / destra | -10 s / +30 s (messaggio in alto) |
 | Scorrimento verticale a sinistra | Luminosità (indicatore; ripristinata all'uscita) |
 | Scorrimento verticale a destra | Volume di sistema (indicatore) |

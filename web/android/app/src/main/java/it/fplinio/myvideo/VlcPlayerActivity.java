@@ -57,14 +57,14 @@ import java.util.Locale;
  *  - in alto: indietro, titolo (serie + episodio), formato schermo;
  *  - al centro: -10 s, play/pausa, +10 s;
  *  - in basso: barra rossa con tempo rimanente e riga con Blocca, Velocita', Episodi, Audio e sottotitoli, Prossimo;
- *  - gesti: luminosita' (sinistra), volume (destra), scorrimento orizzontale = cerca, doppio tocco = salta, tocco = pausa;
- *  - pulsante "Prossimo episodio" quando manca il 5% o meno alla fine.
+ *  - gesti: luminosita' (sinistra), volume (destra), scorrimento orizzontale = cerca, doppio tocco = salta, tocco = mostra/nascondi i comandi (la pausa e' sul pulsante);
+ *  - pulsante "Prossimo episodio" quando manca l'8% o meno alla fine.
  */
 public class VlcPlayerActivity extends AppCompatActivity {
 
     private static final int RED = 0xFFE50914;
-    /** Il pulsante "Prossimo episodio" compare quando manca meno di questa frazione della durata. */
-    private static final float NEXT_BUTTON_FRACTION = 0.05f;
+    /** Il pulsante "Prossimo episodio" compare quando manca meno di questa frazione della durata (8%). */
+    private static final float NEXT_BUTTON_FRACTION = 0.08f;
 
     private static final float[] RATES = {0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f};
     private static final MediaPlayer.ScaleType[] SCALES = {
@@ -139,7 +139,7 @@ public class VlcPlayerActivity extends AppCompatActivity {
     private AudioManager audio;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private final Runnable hide = this::hideOverlay;
+    private final Runnable hide = () -> hideOverlay(false);
     private final Runnable hideToast = () -> { if (toast != null) toast.setVisibility(View.GONE); };
     private final Runnable hideIndicator = () -> { if (indicator != null) indicator.setVisibility(View.GONE); };
     private final Runnable hideUnlock = () -> { if (unlockBtn != null) unlockBtn.setVisibility(View.GONE); };
@@ -229,8 +229,7 @@ public class VlcPlayerActivity extends AppCompatActivity {
 
             @Override public boolean onSingleTapConfirmed(MotionEvent e) {
                 if (locked) { showUnlockButton(); return true; }
-                togglePlay();
-                showOverlay();
+                toggleOverlay();
                 return true;
             }
 
@@ -384,7 +383,7 @@ public class VlcPlayerActivity extends AppCompatActivity {
         bottom.addView(buttons);
         overlay.addView(bottom, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM));
 
-        // ---- pulsante "Prossimo episodio" (compare al 5% finale)
+        // ---- pulsante "Prossimo episodio" (compare all'8% finale)
         nextBtn = text("⏭  Prossimo episodio", 16);
         nextBtn.setTypeface(nextBtn.getTypeface(), Typeface.BOLD);
         GradientDrawable nb = new GradientDrawable();
@@ -880,8 +879,18 @@ public class VlcPlayerActivity extends AppCompatActivity {
         if (player != null && player.isPlaying()) scheduleHide();
     }
 
-    private void hideOverlay() {
-        if (player != null && !player.isPlaying()) return;
+    /** Tocco sullo schermo: mostra i comandi oppure li nasconde (come l'app Netflix). */
+    private void toggleOverlay() {
+        if (overlayVisible) {
+            handler.removeCallbacks(hide);
+            hideOverlay(true);
+        } else {
+            showOverlay();
+        }
+    }
+
+    private void hideOverlay(boolean force) {
+        if (!force && player != null && !player.isPlaying()) return;
         overlayVisible = false;
         overlay.animate().alpha(0f).setDuration(200).withEndAction(() -> { if (!overlayVisible) overlay.setVisibility(View.GONE); }).start();
         goImmersive();

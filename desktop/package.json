@@ -1,6 +1,6 @@
 {
   "name": "myvideo-desktop",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "MyVideo - app desktop",
   "author": "fplinio",
   "main": "main.js",

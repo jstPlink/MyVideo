@@ -3,6 +3,13 @@
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/), versioni semver.
 Ogni commit incrementa la versione e viene pubblicato su GitHub con il tag `vX.Y.Z`.
 
+## [0.8.1] - 2026-11-12
+### Modificato
+- App Android: un tocco sullo schermo non mette più in pausa: **mostra o nasconde i comandi** (come l'app Netflix). La pausa si fa con il pulsante play/pausa. Il doppio tocco e i gesti restano invariati. Lo stesso vale per il lettore web sui dispositivi touch; con il mouse (computer) il clic continua a mettere in pausa, come Netflix sul browser.
+- Il pulsante "Prossimo episodio" compare quando manca l'**8%** della durata (prima 5%): circa 2 minuti su un episodio da 25 minuti. Vale su web, desktop e Android.
+### Corretto
+- Home da telefono: il titolo "Continua a guardare" (e le righe sotto) non si sovrappone più ai pulsanti Riproduci/Riprendi e Altre info dell'immagine in evidenza.
+
 ## [0.8.0] - 2026-11-12
 ### Aggiunto
 - **Pagina Download** (`/download`, anche senza login; link nel menu del profilo e nella schermata di login): scarica l'APK Android e gli installer per Windows, macOS e Linux direttamente dal sito, con il sistema in uso evidenziato, le istruzioni di installazione e l'indirizzo del server da copiare. L'elenco viene dalle release GitHub (`GET /api/downloads`, in cache 10 minuti).

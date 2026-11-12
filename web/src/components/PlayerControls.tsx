@@ -17,8 +17,8 @@ interface Props {
 
 const RATES = [0.5, 0.75, 1, 1.25, 1.5, 2];
 const HIDE_AFTER = 3000;
-/** Il pulsante "Prossimo episodio" compare quando manca meno di questa frazione della durata (5%). */
-export const NEXT_BUTTON_FRACTION = 0.05;
+/** Il pulsante "Prossimo episodio" compare quando manca meno di questa frazione della durata (8%). */
+export const NEXT_BUTTON_FRACTION = 0.08;
 
 function fmt(s: number): string {
   s = Math.max(0, Math.floor(s || 0));
@@ -71,6 +71,8 @@ export default function PlayerControls({ videoRef, containerRef, title, seriesTi
   const hideTimer = useRef<number>();
   const clickTimer = useRef<number>();
   const barRef = useRef<HTMLDivElement>(null);
+  // schermo touch (telefono/tablet): il tocco mostra o nasconde i comandi, come l'app Netflix; la pausa si fa col pulsante
+  const coarse = useMemo(() => typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches, []);
 
   const poke = useCallback(() => {
     setActive(true);
@@ -121,12 +123,12 @@ export default function PlayerControls({ videoRef, containerRef, title, seriesTi
   useEffect(() => {
     const c = containerRef.current;
     if (!c) return;
+    poke();
+    if (coarse) return () => window.clearTimeout(hideTimer.current);
     const on = () => poke();
     c.addEventListener('mousemove', on);
-    c.addEventListener('touchstart', on, { passive: true });
-    poke();
-    return () => { c.removeEventListener('mousemove', on); c.removeEventListener('touchstart', on); window.clearTimeout(hideTimer.current); };
-  }, [containerRef, poke]);
+    return () => { c.removeEventListener('mousemove', on); window.clearTimeout(hideTimer.current); };
+  }, [containerRef, poke, coarse]);
 
   const visible = !playing || active || !!menu || scrub !== null || volOpen;
   useEffect(() => { containerRef.current?.classList.toggle('nocursor', !visible); }, [visible, containerRef]);
@@ -225,10 +227,16 @@ export default function PlayerControls({ videoRef, containerRef, title, seriesTi
 
   const onSurfaceClick = () => {
     if (menu) { setMenu(null); return; }
+    if (coarse) {
+      // tocco: mostra i comandi (si nascondono da soli) oppure li nasconde; non mette in pausa
+      if (visible && playing) { setActive(false); window.clearTimeout(hideTimer.current); } else poke();
+      return;
+    }
     window.clearTimeout(clickTimer.current);
     clickTimer.current = window.setTimeout(toggle, 220);
   };
   const onSurfaceDouble = () => {
+    if (coarse) return;
     window.clearTimeout(clickTimer.current);
     toggleFull();
   };

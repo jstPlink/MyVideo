@@ -8,8 +8,8 @@ Nel browser e nell'app desktop (che mostra la stessa interfaccia) il video è un
 - **Barra di avanzamento rossa** (si ingrandisce al passaggio del mouse): parte già riprodotta in rosso, parte caricata in grigio chiaro, anteprima del tempo sotto il cursore, clic o trascinamento per spostarsi; a destra il tempo rimanente.
 - **Riga dei comandi**: play/pausa, indietro 10 s, avanti 10 s, volume (il cursore compare al passaggio del mouse; volume e muto sono ricordati), titolo al centro; a destra prossimo episodio, **Episodi**, **velocità** (0.5x, 0.75x, normale, 1.25x, 1.5x, 2x) e schermo intero.
 - **Episodi**: pannello con l'elenco della serie, selettore di stagione/saga, episodio in corso evidenziato; un clic apre l'episodio.
-- **Prossimo episodio**: pulsante in basso a destra quando manca il **5%** della durata (`NEXT_BUTTON_FRACTION`, circa 1 minuto e 15 secondi su 25 minuti); a fine episodio parte comunque il successivo.
-- Un clic sul video mette in pausa o riprende, il doppio clic attiva lo schermo intero. I comandi e il cursore si nascondono dopo 3 s senza movimento (restano in pausa o con un menu aperto); il cerchio rosso indica il caricamento.
+- **Prossimo episodio**: pulsante in basso a destra quando manca l'**8%** della durata (`NEXT_BUTTON_FRACTION`, circa 2 minuti su 25 minuti); a fine episodio parte comunque il successivo.
+- Con il **mouse**: un clic sul video mette in pausa o riprende, il doppio clic attiva lo schermo intero. Su **schermi touch** (telefono, tablet) un tocco mostra o nasconde i comandi, senza mettere in pausa (la pausa si fa col pulsante), come l'app Netflix. I comandi e il cursore si nascondono dopo 3 s senza movimento (restano in pausa o con un menu aperto); il cerchio rosso indica il caricamento.
 
 ## Scorciatoie da tastiera
 
